@@ -1,0 +1,18 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
+
+
+data_bulk = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Statistic Analysis/data/CdS_bulk_90K_CdK_Jul18_tran.nor')
+data_M311 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Statistic Analysis/data/CdS_MSC_OA311_90K_tran.nor')
+
+plt.figure()
+plt.plot(data_bulk[:,0],data_bulk[:,1])
+# plt.plot(data_bulk[:,0],data_bulk[:,2])
+print(data_bulk[:,0] == data_M311[:,0])
+plt.plot(data_M311[:,0],data_M311[:,1]-0.017)
+# plt.plot(data_M311[:,0],data_M311[:,4])
+# plt.plot(data_bulk[:,0],data_bulk[:,5])
+
+plt.show()
