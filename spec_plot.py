@@ -1,6 +1,4 @@
-import numpy as np
-from matplotlib import pyplot as plt
-from exafs_func import *
+from xafs.def_sample import *
 
 
 experiment = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_XAFS_CdK_chi_2018.txt')
@@ -48,12 +46,3 @@ k = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_XAFS_C
 
 # exafs_func.plot_xmus(exafs_func,'CdS40')
 
-filename = glob.glob('/Users/Sophia/ownCloud/PhD/Matlab figure/CdS/EXAFS/EXAFSsimulation_InP*')
-for i in filename:
-    data = np.genfromtxt(i)
-    plt.plot(data[:,2],data[:,5] * data[:,2]**2,label = i[67:-8])
-plt.plot(experiment[:,0], experiment[:,3] * experiment[:,0]**2,'k.',markersize=2,label='M311')
-plt.legend()
-plt.xlabel('k')
-plt.ylabel('Chi')
-plt.show()

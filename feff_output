@@ -28,28 +28,33 @@ def compare_output(bond,column,shell,i):
     print('plot {:s}{:s} is ready to show'.format(column,bond))
     return
 
-def plot_feff(num_file,shell):
+def plot_feff(num_file,shell,variance):
+
+    if variance == 2:
+        gap = 0.052328
+    elif variance == 10:
+        gap = 0.26164
     plt.figure(figsize=(6,8))
     plt.subplot(3,1,1)
     for i in range(1,num_file):
-        bond = 2.6164 + 0.26164 * (i-6)    # for 2% change, it is 0.052328, for 10% change, it is 0.26164
+        bond = 2.6164 + gap * (i-6)    # for 2% change, it is 0.052328, for 10% change, it is 0.26164
         compare_output('{:.4f}'.format(bond),'phase','{:d}'.format(shell),i)
 
     plt.subplot(3,1,2)
     for i in range(1,num_file):
-        bond = 2.6164 + 0.26164 * (i-6)
+        bond = 2.6164 + gap * (i-6)
         compare_output('{:.4f}'.format(bond),'Feff','{:d}'.format(shell),i)
 
     plt.subplot(3,1,3)
     for i in range(1,num_file):
-        bond = 2.6164+ 0.26164 * (i-6)
+        bond = 2.6164+ gap * (i-6)
         compare_output('{:.4f}'.format(bond),'lambda','{:d}'.format(shell),i)
 
     plt.figlegend()
     plt.show()
     return
 
-plot_feff(12,1)
-plot_feff(12,2)
+plot_feff(11,1,2)
+plot_feff(11,2,2)
 
 # compare_output('2.6164',)
