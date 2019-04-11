@@ -2,7 +2,7 @@
 from xafs.__init__ import *
 
 
-def ftwindow(self, x, xmin=None, xmax=None, dx=1, dx2=None,
+def ftwindow( x, xmin=None, xmax=None, dx=1, dx2=None,
              window='hanning', _larch=None, **kws):
     """
     create a Fourier transform window array.
@@ -87,14 +87,14 @@ def ftwindow(self, x, xmin=None, xmax=None, dx=1, dx2=None,
 
     return fwin
 
-def FT_chi(self,chi,dx=3):
-    timestep = (self.k[1]-self.k[0])
+def FT_chi(k, chi,dx=3):
+    timestep = (k[1]-k[0])
     time = np.zeros(2048, dtype='complex128')
-    time[int(self.k[0]/timestep):int(self.k.shape[-1]+self.k[0]/timestep)] = self.k
+    time[int(k[0]/timestep):int(k.shape[-1]+k[0]/timestep)] = self.k
     # print(time)
     signal = np.zeros(2048, dtype='complex128')
-    win = self.ftwindow(self.k,dx=dx)
-    signal[int(self.k[0]/timestep):int(self.k.shape[-1]+self.k[0]/timestep)] = chi * win
+    win = ftwindow(k,dx=dx)
+    signal[int(k[0]/timestep):int(k.shape[-1]+k[0]/timestep)] = chi * win
 
 
     dr= np.pi/(time.shape[-1]*timestep)
@@ -109,14 +109,14 @@ def FT_chi(self,chi,dx=3):
     # plt.show()
 
 
-def plot_FT(self,dx=3):
-    y1,y2,y3,y4,y5 = self.LLE_fit
+def plot_fit_FT(sample, dx=3):
+    y1,y2,y3,y4,y5 = sample.LLE_fit()
     for no,i in enumerate([y1,y2,y3,y4,y5]):
         label = ['SCd','OS','OSCd','COS','COSCd']
-        r,amp = self.FT(i,dx=dx)
+        r,amp = FT(i,dx=dx)
         plt.plot(r,amp,label = label[no])
-    r,amp = self.FT(self.experiment*self.k**2,dx=dx)
-    plt.plot(r,amp,label = self.sample)
+    r,amp = FT(sample.experiment* sample.k**2,dx=dx)
+    plt.plot(r,amp,label = sample.sample)
     plt.xlim([0,5])
     plt.legend()
     plt.show()

@@ -1,14 +1,7 @@
 
 from xafs.__init__ import *
+
 from xafs.FT import FT_chi
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
-from scipy.optimize import curve_fit
-import glob
-from scipy import stats
-from scipy.optimize import *
 
 
 class exafs_func():
@@ -395,7 +388,6 @@ class exafs_func():
         return LL
 
 
-    @property
     def LLE_fit(self):
         bounds_OSCd = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['O'],
                                  self.bounds_dic['sd']))
@@ -477,19 +469,19 @@ class exafs_func():
         # FT of difference
         plt.figure()
         #
-        r,amp = FT(fit_y1 - self.experiment * self.k ** 2,dx=3)
+        r,amp = FT_chi(self.k, fit_y1 - self.experiment * self.k ** 2,dx=3)
         plt.plot(r, amp, label='SCd')
 
-        r,amp = FT(fit_y2 - self.experiment * self.k ** 2,dx=3)
+        r,amp = FT_chi(self.k, fit_y2 - self.experiment * self.k ** 2,dx=3)
         plt.plot(r, amp, label='OS')
 
-        r,amp = FT(fit_y3 - self.experiment * self.k ** 2,dx=3)
+        r,amp = FT_chi(self.k, fit_y3 - self.experiment * self.k ** 2,dx=3)
         plt.plot(r, amp, label='OSCd')
 
-        r,amp = FT(fit_y4 - self.experiment * self.k ** 2,dx=3)
+        r,amp = FT_chi(self.k, fit_y4 - self.experiment * self.k ** 2,dx=3)
         plt.plot(r, amp, label='COS')
 
-        r,amp = FT(fit_y5 - self.experiment * self.k ** 2,dx=3)
+        r,amp = FT_chi(self.k, fit_y5 - self.experiment * self.k ** 2,dx=3)
         plt.plot(r, amp, label='COSCd')
         plt.xlim([0,5])
         plt.legend()
