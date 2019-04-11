@@ -8,9 +8,8 @@
 #
 ################
 
-from matplotlib.pyplot import cm
-import numpy as np
-from matplotlib import pyplot as plt
+from xafs import *
+
 def compare_output(bond,column,shell,i):
     data = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Statistic Analysis/data/feff000{:s}_{:s}.dat'.format(shell,bond),skip_header=15)
     k = data[:,0]

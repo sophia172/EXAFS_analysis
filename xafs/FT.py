@@ -1,5 +1,5 @@
 ####  fourier transform of experiment
-from xafs.__init__ import *
+from xafs import *
 
 
 def ftwindow( x, xmin=None, xmax=None, dx=1, dx2=None,
@@ -90,7 +90,7 @@ def ftwindow( x, xmin=None, xmax=None, dx=1, dx2=None,
 def FT_chi(k, chi,dx=3):
     timestep = (k[1]-k[0])
     time = np.zeros(2048, dtype='complex128')
-    time[int(k[0]/timestep):int(k.shape[-1]+k[0]/timestep)] = self.k
+    time[int(k[0]/timestep):int(k.shape[-1]+k[0]/timestep)] = k
     # print(time)
     signal = np.zeros(2048, dtype='complex128')
     win = ftwindow(k,dx=dx)
@@ -115,7 +115,7 @@ def plot_fit_FT(sample, dx=3):
         label = ['SCd','OS','OSCd','COS','COSCd']
         r,amp = FT(i,dx=dx)
         plt.plot(r,amp,label = label[no])
-    r,amp = FT(sample.experiment* sample.k**2,dx=dx)
+    r,amp = FT_chi(sample.k, sample.experiment* sample.k**2,dx=dx)
     plt.plot(r,amp,label = sample.sample)
     plt.xlim([0,5])
     plt.legend()

@@ -1,7 +1,7 @@
+#!/usr/bin/env python
 
-from xafs.__init__ import *
+from xafs import *
 
-from xafs.FT import FT_chi
 
 
 class exafs_func():
@@ -492,6 +492,8 @@ class exafs_func():
 
         plt.show()
         return fit_y1, fit_y2, fit_y3, fit_y4, fit_y5
+
+
 
 
 
