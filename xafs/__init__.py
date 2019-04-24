@@ -14,3 +14,4 @@ from xafs.FT import *
 from xafs.def_sample import *
 from xafs.FEFF_cal import *
 from xafs.ratio_fit import *
+from xafs.artemis_FITplot import *

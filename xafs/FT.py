@@ -90,11 +90,11 @@ def ftwindow( x, xmin=None, xmax=None, dx=1, dx2=None,
 def FT_chi(k, chi,dx=3):
     timestep = (k[1]-k[0])
     time = np.zeros(2048, dtype='complex128')
-    time[int(k[0]/timestep):int(k.shape[-1]+k[0]/timestep)] = k
+    time[int(round(k[0]/timestep)):int(round(k.shape[0]+k[0]/timestep))] = k
     # print(time)
     signal = np.zeros(2048, dtype='complex128')
     win = ftwindow(k,dx=dx)
-    signal[int(k[0]/timestep):int(k.shape[-1]+k[0]/timestep)] = chi * win
+    signal[int(round(k[0]/timestep)):int(round(k.shape[-1]+k[0]/timestep))] = chi * win
 
 
     dr= np.pi/(time.shape[-1]*timestep)
@@ -109,14 +109,20 @@ def FT_chi(k, chi,dx=3):
     # plt.show()
 
 
-def plot_fit_FT(sample, dx=3):
-    y1,y2,y3,y4,y5 = sample.LLE_fit()
-    for no,i in enumerate([y1,y2,y3,y4,y5]):
-        label = ['SCd','OS','OSCd','COS','COSCd']
-        r,amp = FT(i,dx=dx)
-        plt.plot(r,amp,label = label[no])
-    r,amp = FT_chi(sample.k, sample.experiment* sample.k**2,dx=dx)
-    plt.plot(r,amp,label = sample.sample)
+def plot_fit_FT(sample, fit_method='LLE', dx=6):
+    if fit_method == 'LLE':
+        y1,y2,y3,y4,y5,y6,y7 = sample.LLE_fit()
+    if fit_method == 'NL':
+        y1,y2,y3,y4,y5,y6,y7 = sample.NLcurve_fit()
+
+    for no,i in enumerate([y1,y2,y3,y4,y5,y6,y7]):
+        label = ['SCd','OS','OSCd','COS','COSCd','OSCdCd','OOSCd']
+        r,amp = FT_chi(sample.k,i,dx=dx)
+        plt.plot(r,amp, linewidth= sample.linewidth, label = label[no])
+    r,amp = FT_chi(sample.k, sample.experiment* sample.k**sample.weight,dx=dx)
+    plt.plot(r,amp,'k.',label = sample.sample,markersize=0.5)
     plt.xlim([0,5])
     plt.legend()
+    plt.title('Fourier Transform of fitting result')
+    plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/FT_fit{:s}.pdf'.format(fit_method), format='pdf')
     plt.show()
