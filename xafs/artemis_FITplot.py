@@ -19,12 +19,14 @@ def artemis_fit(sample):
         plt.plot(k,fit,linewidth=0.5,label=i[-8:-2])
     plt.plot(k,chi,'k.',markersize=0.5,label='{:s} {:s}'.format(sample.sample, sample.fitted_curve))
     plt.title('chi fit in Artemis {:s} {:s}'.format(sample.sample, sample.fitted_curve))
-    plt.legend()
+    plt.legend(loc='center right')
 
     plt.subplot(2,1,2)
     for i in all_fits:
         plt.plot(k,np.array(i)-chi,linewidth=0.5)
     plt.title('fit difference in Artemis {:s} {:s}'.format(sample.sample, sample.fitted_curve))
+    plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/artemis_fit_{:s}_{:s}_chi.pdf'.format(sample.sample,sample.fitted_curve),
+                format='pdf')
     plt.show()
 
     plt.figure()
@@ -37,12 +39,14 @@ def artemis_fit(sample):
         plt.plot(k,fit,linewidth=0.5,label=i[-9:-3])
     plt.plot(k,chik2,'k.',markersize=0.5,label='{:s} {:s}'.format(sample.sample, sample.fitted_curve))
     plt.title('chik^2 fit in Artemis {:s} {:s}'.format(sample.sample, sample.fitted_curve))
-    plt.legend()
+    plt.legend(loc='center right')
 
     plt.subplot(2,1,2)
     for i in all_fits:
         plt.plot(k,np.array(i)-chik2,linewidth=0.5)
     plt.title('fit difference in Artemis {:s} {:s}'.format(sample.sample, sample.fitted_curve))
+    plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/artemis_fit_{:s}_{:s}_chik2.pdf'.format(sample.sample,sample.fitted_curve),
+                format='pdf')
     plt.show()
 
 

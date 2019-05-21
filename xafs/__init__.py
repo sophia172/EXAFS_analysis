@@ -9,6 +9,16 @@ import glob
 from scipy import stats
 from scipy.optimize import *
 from numdifftools import Jacobian
+from math import sqrt,pi,pow
+from numpy import *
+
+
+from numpy import linalg
+#from scipy import *
+from numpy import fft
+from time import time
+import numpy
+
 
 from xafs.FT import *
 from xafs.def_sample import *
