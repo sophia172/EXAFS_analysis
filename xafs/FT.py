@@ -73,18 +73,21 @@ def calcfft(kdata,k3xafsdata,kmin=2.4,kmax=16,windowType='hanning'):
 
 def plot_fit_FT(sample, fit_method='LLE'):
     if fit_method == 'LLE':
-        y1,y2,y3,y4 = sample.LLE_fit()
+        y1,y2,y3,y4,y5 = sample.LLE_fit()
     if fit_method == 'NL':
         y1,y2,y3,y4,y5,y6 = sample.NLcurve_fit()
-
-    for no,i in enumerate([y1,y2,y3,y4]):
-        label = ['SCd','OS','OSCd','OSCdCd']
+    plt.subplot(2,1,2)
+    for no,i in enumerate([y1,y2,y3,y4,y5]):
+        label = ['SCd','OS','OSCd','OSCdCd','OOS']
         r,amp,real,img = calcfft(sample.k,i*sample.k)
         plt.plot(r,amp, linewidth= sample.linewidth, label = label[no])
     r,amp,real,img = calcfft(sample.k, sample.experiment * sample.k**3)
     plt.plot(r,amp,'k.',label = sample.sample,markersize=0.5)
     plt.xlim([0,5])
-    plt.legend()
-    plt.title('Fourier Transform of fitting result')
-    plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/FT_fit{:s}.pdf'.format(fit_method), format='pdf')
+    plt.xlabel('R')
+    plt.yticks([])
+    plt.legend(fontsize=5)
+    # plt.title('Fourier Transform of fitting result')
+    plt.tight_layout()
+    plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/fit{:s}.pdf'.format(fit_method), format='pdf')
     plt.show()

@@ -11,7 +11,7 @@ from scipy.optimize import *
 from numdifftools import Jacobian
 from math import sqrt,pi,pow
 from numpy import *
-
+from scipy.constants import *
 
 from numpy import linalg
 #from scipy import *
@@ -25,3 +25,5 @@ from xafs.def_sample import *
 from xafs.FEFF_cal import *
 from xafs.ratio_fit import *
 from xafs.artemis_FITplot import *
+
+

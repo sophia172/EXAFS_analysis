@@ -89,8 +89,8 @@ plt.xlabel('R ($\AA$)')
 plt.ylabel('Intensity')
 plt.title('FT of experiment')
 plt.tight_layout()
-plt.show()
 plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/M311_experiment.pdf',format='pdf')
+plt.show()
 
 plt.figure()
 plt.subplot(2,1,1)
@@ -113,8 +113,7 @@ plt.xlabel('R ($\AA$)')
 plt.ylabel('Intensity')
 plt.title('FT of experiment')
 plt.tight_layout()
-plt.show()
 plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/M322_experiment.pdf',format='pdf')
-
+plt.show()
 
 

@@ -7,15 +7,34 @@ def interpolation(f, x):
     g = interp1d(f[:, 0], f[:, 1])
     return g(x.tolist())
 
+
+################################################
+#
+##
+#  Test if Ge each peak adds up together
+#
+#
+####################################################
+
+chiq1 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi1.chiq')
+chiq2 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi2.chiq')
+chiq3 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi3.chiq')
+#
+# plt.figure()
+# plt.plot(k,exp*k**2)
+# plt.plot(chiq1[:,0],chiq1[:,1]+chiq2[:,1]+chiq3[:,1])
+# plt.xlim([0,20])
+# plt.show()
+
 experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi.dat',skip_header=5)
 k = experiments[:,0]
-exp = experiments[:,1]
 weight=2
 
 k_min = (np.abs(k - 3)).argmin()
-k_max = (np.abs(k - 19)).argmin()
-k = k[k_min:k_max]
-exp = exp[k_min:k_max]
+k_max = (np.abs(k - 18)).argmin()
+k_fit = k[k_min:k_max]
+
+# exp = exp[k_min:k_max]
 
 FEFF_1 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/feff0001.dat',
                          skip_header=15)
@@ -24,18 +43,34 @@ FEFF_2 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/feff0002.dat',
 FEFF_3 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/feff0005.dat',
                        skip_header=15)
 
+# data_excurve = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_pot_pha.dat',skip_header=5)
+# Feff1=data_excurve[:,(0,1)]
+# Feff2=Feff1
+# Feff3=Feff1
+#
+# phase1=data_excurve[:,(0,2)]
+# phase1[:,1] += data_excurve[:,3]
+# phase2=phase1
+# phase3 = phase1
+
+
+
 Feff1 = FEFF_1[:, (0, 2)]
 Feff2 = FEFF_2[:, (0, 2)]
 Feff3 = FEFF_3[:, (0, 2)]
 
 
+
 phase1 = FEFF_1[:, (0, 1)]
+         #+0.9
 phase1[:, 1] += FEFF_1[:, 3]
 
 phase2 = FEFF_2[:, (0, 1)]
+         #+1.468
 phase2[:, 1] += FEFF_2[:, 3]
 
 phase3 = FEFF_3[:, (0, 1)]
+         #+1.727
 phase3[:, 1] += FEFF_3[:, 3]
 
 
@@ -43,22 +78,22 @@ lambda1 = FEFF_1[:, (0, 5)]
 lambda2 = FEFF_2[:, (0, 5)]
 lambda3 = FEFF_3[:, (0, 5)]
 
-Feff1 =  interpolation(Feff1,  k)
-Feff2 =  interpolation(Feff2,  k)
-Feff3 =  interpolation(Feff3,  k)
-lambda1 =  interpolation(lambda1,  k)
-lambda2 =  interpolation(lambda2,  k)
-lambda3 =  interpolation(lambda3,  k)
-phase1 =  interpolation(phase1,  k)
-phase2 =  interpolation(phase2,  k)
-phase3 =  interpolation(phase3,  k)
+Feff1 =  interpolation(Feff1,  k_fit)
+Feff2 =  interpolation(Feff2,  k_fit)
+Feff3 =  interpolation(Feff3,  k_fit)
+lambda1 =  interpolation(lambda1,  k_fit)
+lambda2 =  interpolation(lambda2,  k_fit)
+lambda3 =  interpolation(lambda3,  k_fit)
+phase1 =  interpolation(phase1,  k_fit)
+phase2 =  interpolation(phase2,  k_fit)
+phase3 =  interpolation(phase3,  k_fit)
 #
 # plt.plot(k,phase3)
 # plt.show()
-print('R1              ss1               R2             ss2               R3                  ss3')
-def EXAFS_model(x,N1,R1,ss1,N2,R2,ss2,N3,R3,ss3,e):
-    # print(R1,ss1,R2,ss2,R3,ss3)
-    return e + N1 * x **weight\
+print('N1              R1                  ss1                    N2                    R2             ss2                  N3                       R3                  ss3')
+def EXAFS_model(x,N1,R1,ss1,N2,R2,ss2,N3,R3,ss3):
+    print(N1,R1,ss1,N2,R2,ss2,N3,R3,ss3)
+    return N1 * x **weight\
            * abs( Feff1.astype(float)) / (x.astype(float) * R1 ** 2) \
            * np.sin(2 * x.astype(float) * R1 +  phase1.astype(float)) \
            * np.exp(-2 * R1 /  lambda1.astype(float)) \
@@ -73,45 +108,130 @@ def EXAFS_model(x,N1,R1,ss1,N2,R2,ss2,N3,R3,ss3,e):
            * np.sin(2 * x.astype(float) * R3 +  phase3.astype(float)) \
            * np.exp(-2 * R3 /  lambda3.astype(float)) \
            * np.exp(-2 * ss3 * x.astype(float) ** 2)
+#
+# def EXAFS_shell(x,N,R,ss):
+#     return N * x **weight \
+#            * abs( Feff1.astype(float)) / (x.astype(float) * R ** 2) \
+#            * np.sin(2 * x.astype(float) * R +  phase1.astype(float)) \
+#            * np.exp(-2 * R /  lambda1.astype(float)) \
+#            * np.exp(-2 * ss * x.astype(float) ** 2)
+#
+# plt.figure()
+# plt.plot(k,EXAFS_shell(k,3.324,2.447,0.00236),label='path')
+# plt.plot(chiq1[:,0],chiq1[:,1],label='RFT')
+# plt.legend()
+# plt.show()
 
 
-params_dic = {'Ge1': [6, 2.49, 0.0058], 'Ge2': [12, 3.77, 0.009], 'Ge3': [12, 4.055, 0.0063], 'e':[0], 'sd': [1]}
-bounds_dic = {'Ge1': np.array([(6, 6), (2.4, 2.6), (0.0001, 0.02)]),
-              'Ge2': np.array([(12,12), (3.2, 4.3), (0.0001, 0.02)]),
-              'Ge3': np.array([(12,12), (3.5, 4.9), (0.0001, 0.02)]),
-              'e': np.array([(-10,10)]),
+params_dic = {'Ge1': [6, 2.35, 0.00234], 'Ge2': [12, 4, 0.005], 'Ge3': [12, 4.8, 0.006], 'e':[3], 'sd': [1]}
+bounds_dic = {'Ge1': np.array([(3, 4), (2.1, 3), (0.002, 0.003)]),
+              'Ge2': np.array([(9,12), (3., 4.3), (0.002, 0.005)]),
+              'Ge3': np.array([(9,12), (4.3, 5.2), (0.002, 0.005)]),
+              'e': np.array([(-20,20)]),
               'sd': np.array([(0,1)])}
+bounds_shell= np.vstack((bounds_dic['Ge1'], bounds_dic['e']))
 
-
-params = params_dic['Ge1'] + params_dic['Ge2'] + params_dic['Ge3'] + params_dic['e'] + params_dic['sd']
-bounds = np.vstack((bounds_dic['Ge1'], bounds_dic['Ge2'], bounds_dic['Ge3'], bounds_dic['e'], bounds_dic['sd']))
-
-popt, pcov = curve_fit(EXAFS_model, k.astype(float),(exp * k **2).astype(float), p0=params[:-1])
-fit = EXAFS_model(k, *popt)
-print(*popt)
+params = params_dic['Ge1'] + params_dic['Ge2'] + params_dic['Ge3'] + params_dic['e']
+bounds = np.vstack((bounds_dic['Ge1'], bounds_dic['Ge2'], bounds_dic['Ge3'], bounds_dic['e']))
+# bounds_NL = np.vstack((bounds_dic['Ge1'], bounds_dic['Ge2'], bounds_dic['Ge3'], bounds_dic['e']))
+# popt, pcov = curve_fit(EXAFS_model, k.astype(float),(exp * k **2).astype(float), p0=params,bounds=bounds_NL.transpose())
+# fit = EXAFS_model(k, *popt)
+# print(*popt)
 
 def LLE_model(params):
-    model = EXAFS_model(k, *params[:-1])
-    LL = -np.sum(stats.norm.logpdf(exp * k**weight, loc=model))
+
+    e = params[-1]
+
+    exp = experiments[:,(0,1)]
+    model = EXAFS_model(k_fit, *params[:-1])
+    k_new=np.sqrt(k_fit**2-0.2625*e)
+    exp = interpolation(exp,k_new)
+    LL = -np.sum(stats.norm.logpdf(exp * k_fit**weight, loc=model))
     return LL
-LLE_fitresult = minimize(LLE_model, params, method='TNC', bounds=bounds,options={'maxiter': 12000})
-fit_LLE = EXAFS_model(k, *LLE_fitresult.x[:-1])
-print(*LLE_fitresult.x[:-1])
+
+# def LLE_shell(params):
+#     model = EXAFS_shell(k, *params)
+#     LL = -np.sum(stats.norm.logpdf(exp * k**weight, loc=model))
+#     return LL
+
+class MyTakeStep(object):
+    def __init__(self, stepsize=0.001):
+        self.stepsize = stepsize
+    def __call__(self, x):
+        s = self.stepsize
+        x[0] += np.random.uniform(-2.*s, 2.*s)
+        x[1:] += np.random.uniform(-s, s, x[1:].shape)
+        return x
+
+
+
+
+
+
+mytakestep = MyTakeStep()
+minimizer_kwargs = {"method":"L-BFGS-B", "jac":True}
+# Local minimum
+# LLE_fitresult = minimize(LLE_model, params, method='TNC', bounds=bounds,options={'maxiter': 12000})
+# Global minimum
+# LLE_fitresult = basinhopping(LLE_model, params,niter=200, take_step=mytakestep)
+# Global minimu rate 4/5
+LLE_fitresult = differential_evolution(LLE_model,bounds=bounds,strategy='randtobest1exp', popsize=200,maxiter=10000)
+
+# LLE_fitresult = shgo(LLE_model,bounds=bounds,iters=5)
+
+# LLE_fitresult = dual_annealing(LLE_model,bounds=bounds)
+
+fit_LLE = EXAFS_model(k_fit, 3.5369898154723756, 2.4408380563278325, 0.0026742830071242274, 9.062279193948191,
+                      3.9990152643349384, 0.00359010486223363, 9.219049633898317, 4.688640609870765, 0.003951154053257978)
+# print(*LLE_fitresult.x)
+####################################
+#
+#       Import fit result from Artemis
+#           and plot
+#
+######################################################
+
+chi_data = np.genfromtxt("/Users/Sophia/ownCloud/PhD/Simulation/Ge/c_ge12_chi.k2")[:,(0,2)]
+
+
+
+e=13.941693053681945
+exp = experiments[:,(0,1)]
+k_new=np.sqrt(k_fit**2-0.2625*e)
+exp = interpolation(exp,k_new)
+e_artemis = 12.16917
+k_artemis = np.sqrt(k_fit**2-0.2625*e_artemis)
+chi_data = interpolation(chi_data, k_artemis)
+
 
 plt.figure()
-plt.plot(k,exp *k**weight,'k', linewidth = 1, label = 'experiment')
-plt.plot(k, fit, linewidth=1, label='nonlinear curve fit (scipy) of Germanium')
-plt.plot(k,fit_LLE,linewidth=1, label='LLE fit (scipy) of Germanium')
+plt.subplot(2,1,1)
+plt.plot(k_fit,exp *k_fit**weight,'k', linewidth = 1, label = 'experiment')
+# plt.plot(k, fit, linewidth=1, label='nonlinear curve fit (scipy) of Germanium')
+plt.plot(k_fit,fit_LLE,linewidth=1, label='Python fit of Ge')
+# plt.plot(k, fit, linewidth=1, label='nonlinear curve fit (scipy) of Germanium')
+plt.plot(k_fit,chi_data,linewidth=1, label='Artemis fit of Ge')
+plt.xlim([2,18])
+plt.ylim([-3,3])
+plt.xlabel('k ($\AA^{-1}$)')
+plt.ylabel('$k^2\chi$')
 plt.legend()
-plt.show()
+plt.tight_layout()
 
-plt.figure()
-r,amp,real,imag = calcfft(k,exp*k**3,kmin=2,kmax=20)
+plt.subplot(2,1,2)
+r,amp,real,imag = calcfft(k_fit,exp*k_fit**3,kmin=3,kmax=18)
 plt.plot(r,amp,'k', linewidth = 1, label = 'experiment')
-r,amp,real,imag = calcfft(k,fit*k,kmin=2,kmax=20)
-plt.plot(r,amp, linewidth=1, label='nonlinear curve fit (scipy) of Germanium')
-r,amp,real,imag = calcfft(k,fit_LLE*k,kmin=2,kmax=20)
-plt.plot(r,amp,linewidth=1, label='LLE fit (scipy) of Germanium')
+# r,amp,real,imag = calcfft(k,fit*k,kmin=3,kmax=18)
+# plt.plot(r,amp, linewidth=1, label='nonlinear curve fit (scipy) of Germanium')
+r,amp,real,imag = calcfft(k_fit,fit_LLE*k_fit,kmin=3,kmax=18)
+plt.plot(r,amp,linewidth=1, label='Python fit of Ge')
+
+r,amp,real,imag = calcfft(k_fit,chi_data*k_fit,kmin=3,kmax=18)
+plt.plot(r,amp,linewidth=1, label='Artemis fit of Ge')
+plt.xlabel('R ($\AA$)')
+plt.ylabel('Intensity')
 plt.legend()
 plt.xlim([0,5])
+plt.tight_layout()
+plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/Ge_analysis.pdf',format='pdf')
 plt.show()

@@ -7,14 +7,16 @@ from xafs import *
 class exafs_func():
     linewidth = 0.5
     weight = 2
-    params_dic = {'O': [7.8, 2.4, 0.02528], 'Cd': [3, 3.8, 0.06], 'Cd2': [3, 3.4, 0.07],'S': [4, 2.5165, 0.006], 'C':[2,1.5,0.01], 'sd': [1], 'e0': [0]}
-    bounds_dic = {'S': np.array([(0, 10), (2.4, 2.6), (0.002, 0.007)]),
-                  'Cd': np.array([(0, 12), (3.2, 4.3), (0.003, 0.1)]),
-                  'Cd2': np.array([(0, 12), (3.2, 4.3), (0.003, 0.1)]),
-                  'O': np.array([(0, 12), (2.2, 2.6), (0.001, 0.03)]),
+    params_dic = {'O': [7.8, 2.4, 0.02528],'O2': [7.8, 2.4, 0.02528], 'Cd': [3, 3.8, 0.06], 'Cd2': [3, 3.4, 0.07],'S': [4, 2.5165, 0.006], 'C':[2,1.5,0.01], 'sd': [1], 'e0': [0]}
+    bounds_dic = {'S': np.array([(1, 6), (2.4, 2.6), (0.002, 0.008)]),
+                  'Cd': np.array([(3, 12), (3.5, 4.0), (0.01, 0.1)]),
+                  'Cd2': np.array([(3, 12), (3.8, 4.3), (0.01, 0.1)]),
+                  'O': np.array([(1, 12), (2.1, 2.5), (0.001, 0.05)]),
+                  'O2': np.array([(1, 12), (3, 5), (0.001, 0.5)]),
                   'C': np.array([(0, 6), (1, 4), (0.001, 0.2)]),
                   'sd': np.array([(0.5, 1.5)]),
-                  'e0': np.array([(-1,1)])}
+                  'e0': np.array([(-20,20)])}
+
 
     def __init__(self, sample='bulk', k_min=2, k_max=18, R_CdO=2.280, R_CdS=2.516, ss_CdS = 0.0047, ss_CdO = 0.0090,fitted_curve='athena'):
 
@@ -24,25 +26,30 @@ class exafs_func():
         self.ss_CdS = ss_CdS
         self.ss_CdO = ss_CdO
         self.sample = sample
-        if sample == 'bulk':
-            exp_col = 3
-        elif sample == 'M311':
-            exp_col = 2
-        else:
-            exp_col = 4
+
 
 
         if fitted_curve == 'athena':
-            experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_XAFS_CdK_chi_2018.txt')
-            self.k = experiments[:, 0]
-            self.experiment = experiments[:,exp_col]
-            k_min = (np.abs(self.k - k_min)).argmin()
-            k_max = (np.abs(self.k - k_max)).argmin()
-            self.k = self.k[k_min:k_max]
-            self.experiment = self.experiment[k_min:k_max]
-            print(self.k,self.experiment)
-            plt.plot(self.k,self.experiment)
-            plt.show()
+            if sample == 'bulk':
+                experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_bulk_Aug18_CdK_90K_tran.chiq')
+                self.k_original =experiments[:,0]
+                self.experiment_original = experiments[:,1]
+            elif sample == 'M311':
+                experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_XAFS_CdK_chi_2018.txt')
+                self.k_original = experiments[:, 0]
+                self.experiment_original = experiments[:,2]
+            else:
+                experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_XAFS_CdK_chi_2018.txt')
+                self.k_original = experiments[:, 0]
+                self.experiment_original = experiments[:,4]
+            k_min = (np.abs(self.k_original - k_min)).argmin()
+            k_max = (np.abs(self.k_original - k_max)).argmin()
+            self.k_max = k_max
+            self.k = self.k_original[k_min:k_max]
+            self.experiment = self.experiment_original[k_min:k_max]
+            # print(self.k,self.experiment)
+            # plt.plot(self.k,self.experiment)
+            # plt.show()
         ######pyspline chi result######
         #
         ##
@@ -52,16 +59,17 @@ class exafs_func():
             # Andrei's pyspline
             experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/andrei_pyspline/CdS_MSC_{:s}_90K_py.dat'.format(sample),skip_header=6)
 
-            self.k = experiments[:,2]
-            self.experiment = experiments[:,7]
-            k_min = (np.abs(self.k - k_min)).argmin()
-            k_max = (np.abs(self.k - k_max)).argmin()
-            self.k = self.k[k_min:k_max]
-            self.experiment = self.experiment[k_min:k_max]
+            self.k_original = experiments[:,2]
+            self.experiment_original = experiments[:,7]
+            k_min = (np.abs(self.k_original - k_min)).argmin()
+            k_max = (np.abs(self.k_original - k_max)).argmin()
+            self.k_max = k_max
+            self.k = self.k_original[k_min:k_max]
+            self.experiment = self.experiment_original[k_min:k_max]
 
-            print(self.k,self.experiment)
-            plt.plot(self.k,self.experiment)
-            plt.show()
+            # print(self.k,self.experiment)
+            # plt.plot(self.k,self.experiment)
+            # plt.show()
 
         elif fitted_curve == 'pyspline_Ying':
             # my pyspline
@@ -69,16 +77,17 @@ class exafs_func():
             # Andrei's pyspline
             # experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/andrei_pyspline/CdS_MSC_{:s}_90K_py.dat'.format(sample),skip_header=6)
 
-            self.k = experiments[:,2]
-            self.experiment = experiments[:,7]
-            k_min = (np.abs(self.k - k_min)).argmin()
-            k_max = (np.abs(self.k - k_max)).argmin()
-            self.k = self.k[k_min:k_max]
-            self.experiment = self.experiment[k_min:k_max]
+            self.k_original = experiments[:,2]
+            self.experiment_original = experiments[:,7]
+            k_min = (np.abs(self.k_original - k_min)).argmin()
+            k_max = (np.abs(self.k_original - k_max)).argmin()
+            self.k_max = k_max
+            self.k = self.k_original[k_min:k_max]
+            self.experiment = self.experiment_original[k_min:k_max]
 
-            print(self.k,self.experiment)
-            plt.plot(self.k,self.experiment)
-            plt.show()
+            # print(self.k,self.experiment)
+            # plt.plot(self.k,self.experiment)
+            # plt.show()
         ####
         #
         #     Required data in FEFF analysis
@@ -215,7 +224,7 @@ class exafs_func():
 
 
 
-    def EXAFS_model_OS(self, x, N1, R1, ss1, N3, R3, ss3,e0):
+    def EXAFS_model_OS(self, x, N1, R1, ss1, N3, R3, ss3):
         return N1 * x ** self.weight \
                * abs(self.Feff1.astype(float)) / (x.astype(float) * R1 ** 2) \
                * np.sin(2 * x.astype(float) * R1 + self.phase1.astype(float)) \
@@ -225,51 +234,9 @@ class exafs_func():
                * abs(self.Feff3.astype(float)) / (x.astype(float) * R3 ** 2) \
                * np.sin(2 * x.astype(float) * R3 + self.phase3.astype(float)) \
                * np.exp(-2 * R3 / self.lambda3.astype(float)) \
-               * np.exp(-2 * ss3 * x.astype(float) ** 2) \
-               +e0
+               * np.exp(-2 * ss3 * x.astype(float) ** 2)
 
-    def EXAFS_model_OSCd(self, x, N1, R1, ss1, N2, R2, ss2, N3, R3, ss3 ,e0):
-        return N1 * x ** self.weight \
-               * abs(self.Feff1.astype(float)) / (x.astype(float) * R1 ** 2) \
-               * np.sin(2 * x.astype(float) * R1 + self.phase1.astype(float)) \
-               * np.exp(-2 * R1 / self.lambda1.astype(float)) \
-               * np.exp(-2 * ss1 * x.astype(float) ** 2) \
-               + N2 * x ** self.weight \
-               * abs(self.Feff2.astype(float)) / (x.astype(float) * R2 ** 2) \
-               * np.sin(2 * x.astype(float) * R2 + self.phase2.astype(float)) \
-               * np.exp(-2 * R2 / self.lambda2.astype(float)) \
-               * np.exp(-2 * ss2 * x.astype(float) ** 2) \
-               + N3 * x ** self.weight \
-               * abs(self.Feff3.astype(float)) / (x.astype(float) * R3 ** 2) \
-               * np.sin(2 * x.astype(float) * R3 + self.phase3.astype(float)) \
-               * np.exp(-2 * R3 / self.lambda3.astype(float)) \
-               * np.exp(-2 * ss3 * x.astype(float) ** 2) \
-               + e0
-
-    def EXAFS_model_OSCd2(self, x, N1, R1, ss1, N2, R2, ss2, N22, R22, ss22, N3, R3, ss3, e0):
-        return N1 * x ** self.weight \
-               * abs(self.Feff1.astype(float)) / (x.astype(float) * R1 ** 2) \
-               * np.sin(2 * x.astype(float) * R1 + self.phase1.astype(float)) \
-               * np.exp(-2 * R1 / self.lambda1.astype(float)) \
-               * np.exp(-2 * ss1 * x.astype(float) ** 2) \
-               + N2 * x ** self.weight \
-               * abs(self.Feff2.astype(float)) / (x.astype(float) * R2 ** 2) \
-               * np.sin(2 * x.astype(float) * R2 + self.phase2.astype(float)) \
-               * np.exp(-2 * R2 / self.lambda2.astype(float)) \
-               * np.exp(-2 * ss2 * x.astype(float) ** 2) \
-               + N22 * x ** self.weight \
-               * abs(self.Feff2.astype(float)) / (x.astype(float) * R22 ** 2) \
-               * np.sin(2 * x.astype(float) * R22 + self.phase2.astype(float)) \
-               * np.exp(-2 * R22 / self.lambda2.astype(float)) \
-               * np.exp(-2 * ss2 * x.astype(float) ** 2) \
-               + N3 * x ** self.weight \
-               * abs(self.Feff3.astype(float)) / (x.astype(float) * R3 ** 2) \
-               * np.sin(2 * x.astype(float) * R3 + self.phase3.astype(float)) \
-               * np.exp(-2 * R3 / self.lambda3.astype(float)) \
-               * np.exp(-2 * ss3 * x.astype(float) ** 2) \
-               + e0
-
-    def EXAFS_model_O2SCd(self, x, N1, R1, ss1, N2, R2, ss2, N3, R3, ss3, N33, R33, ss33, e0):
+    def EXAFS_model_OSCd(self, x, N1, R1, ss1, N2, R2, ss2, N3, R3, ss3):
         return N1 * x ** self.weight \
                * abs(self.Feff1.astype(float)) / (x.astype(float) * R1 ** 2) \
                * np.sin(2 * x.astype(float) * R1 + self.phase1.astype(float)) \
@@ -284,15 +251,9 @@ class exafs_func():
                * abs(self.Feff3.astype(float)) / (x.astype(float) * R3 ** 2) \
                * np.sin(2 * x.astype(float) * R3 + self.phase3.astype(float)) \
                * np.exp(-2 * R3 / self.lambda3.astype(float)) \
-               * np.exp(-2 * ss3 * x.astype(float) ** 2) \
-               + N33 * x ** self.weight \
-               * abs(self.Feff3.astype(float)) / (x.astype(float) * R33 ** 2) \
-               * np.sin(2 * x.astype(float) * R33 + self.phase3.astype(float)) \
-               * np.exp(-2 * R33 / self.lambda3.astype(float)) \
-               * np.exp(-2 * ss3 * x.astype(float) ** 2) \
-               + e0
+               * np.exp(-2 * ss3 * x.astype(float) ** 2)
 
-    def EXAFS_model_O2SCd2(self, x, N1, R1, ss1, N2, R2, ss2, N22, R22, ss22, N3, R3, ss3, N33, R33, ss33 ,e0):
+    def EXAFS_model_OSCd2(self, x, N1, R1, ss1, N2, R2, ss2, N22, R22, ss22, N3, R3, ss3):
         return N1 * x ** self.weight \
                * abs(self.Feff1.astype(float)) / (x.astype(float) * R1 ** 2) \
                * np.sin(2 * x.astype(float) * R1 + self.phase1.astype(float)) \
@@ -307,7 +268,47 @@ class exafs_func():
                * abs(self.Feff2.astype(float)) / (x.astype(float) * R22 ** 2) \
                * np.sin(2 * x.astype(float) * R22 + self.phase2.astype(float)) \
                * np.exp(-2 * R22 / self.lambda2.astype(float)) \
+               * np.exp(-2 * ss22 * x.astype(float) ** 2) \
+               + N3 * x ** self.weight \
+               * abs(self.Feff3.astype(float)) / (x.astype(float) * R3 ** 2) \
+               * np.sin(2 * x.astype(float) * R3 + self.phase3.astype(float)) \
+               * np.exp(-2 * R3 / self.lambda3.astype(float)) \
+               * np.exp(-2 * ss3 * x.astype(float) ** 2)
+
+
+    def EXAFS_model_O2S(self, x, N1, R1, ss1, N3, R3, ss3, N33, R33, ss33):
+        return N1 * x ** self.weight \
+               * abs(self.Feff1.astype(float)) / (x.astype(float) * R1 ** 2) \
+               * np.sin(2 * x.astype(float) * R1 + self.phase1.astype(float)) \
+               * np.exp(-2 * R1 / self.lambda1.astype(float)) \
+               * np.exp(-2 * ss1 * x.astype(float) ** 2) \
+               + N3 * x ** self.weight \
+               * abs(self.Feff3.astype(float)) / (x.astype(float) * R3 ** 2) \
+               * np.sin(2 * x.astype(float) * R3 + self.phase3.astype(float)) \
+               * np.exp(-2 * R3 / self.lambda3.astype(float)) \
+               * np.exp(-2 * ss33 * x.astype(float) ** 2) \
+               + N33 * x ** self.weight \
+               * abs(self.Feff3.astype(float)) / (x.astype(float) * R33 ** 2) \
+               * np.sin(2 * x.astype(float) * R33 + self.phase3.astype(float)) \
+               * np.exp(-2 * R33 / self.lambda3.astype(float)) \
+               * np.exp(-2 * ss3 * x.astype(float) ** 2)
+
+    def EXAFS_model_O2SCd2(self, x, N1, R1, ss1, N2, R2, ss2, N22, R22, ss22, N3, R3, ss3, N33, R33, ss33):
+        return N1 * x ** self.weight \
+               * abs(self.Feff1.astype(float)) / (x.astype(float) * R1 ** 2) \
+               * np.sin(2 * x.astype(float) * R1 + self.phase1.astype(float)) \
+               * np.exp(-2 * R1 / self.lambda1.astype(float)) \
+               * np.exp(-2 * ss1 * x.astype(float) ** 2) \
+               + N2 * x ** self.weight \
+               * abs(self.Feff2.astype(float)) / (x.astype(float) * R2 ** 2) \
+               * np.sin(2 * x.astype(float) * R2 + self.phase2.astype(float)) \
+               * np.exp(-2 * R2 / self.lambda2.astype(float)) \
                * np.exp(-2 * ss2 * x.astype(float) ** 2) \
+               + N22 * x ** self.weight \
+               * abs(self.Feff2.astype(float)) / (x.astype(float) * R22 ** 2) \
+               * np.sin(2 * x.astype(float) * R22 + self.phase2.astype(float)) \
+               * np.exp(-2 * R22 / self.lambda2.astype(float)) \
+               * np.exp(-2 * ss22 * x.astype(float) ** 2) \
                + N3 * x ** self.weight \
                * abs(self.Feff3.astype(float)) / (x.astype(float) * R3 ** 2) \
                * np.sin(2 * x.astype(float) * R3 + self.phase3.astype(float)) \
@@ -317,11 +318,11 @@ class exafs_func():
                * abs(self.Feff3.astype(float)) / (x.astype(float) * R33 ** 2) \
                * np.sin(2 * x.astype(float) * R33 + self.phase3.astype(float)) \
                * np.exp(-2 * R33 / self.lambda3.astype(float)) \
-               * np.exp(-2 * ss3 * x.astype(float) ** 2) \
-               + e0
+               * np.exp(-2 * ss33 * x.astype(float) ** 2)
 
 
-    def EXAFS_model_SCd(self, x, N1, R1, ss1, N2, R2, ss2, e0):
+
+    def EXAFS_model_SCd(self, x, N1, R1, ss1, N2, R2, ss2):
         return N1 * x.astype(float) ** self.weight \
                * abs(self.Feff1.astype(float)) / (x.astype(float) * R1 ** 2) \
                * np.sin(2 * x.astype(float) * R1 + self.phase1.astype(float)) \
@@ -331,8 +332,7 @@ class exafs_func():
                * abs(self.Feff2.astype(float)) / (x.astype(float) * R2 ** 2) \
                * np.sin(2 * x.astype(float) * R2 + self.phase2.astype(float)) \
                * np.exp(-2 * R2 / self.lambda2.astype(float)) \
-               * np.exp(-2 * ss2 * x.astype(float) ** 2) \
-               + e0
+               * np.exp(-2 * ss2 * x.astype(float) ** 2)
     #
     # def EXAFS_model_COSCd(self, x, N1, R1, ss1, N2, R2, ss2, N3, R3, ss3, N4, R4, ss4):
     #     return N1 * x ** self.weight \
@@ -441,8 +441,8 @@ class exafs_func():
         params_OSCd = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['O'] + self.params_dic['e0']
         bounds_OSCd2 = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['Cd'], self.bounds_dic['O'], self.bounds_dic['e0']))
         params_OSCd2 = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['Cd'] + self.params_dic['O'] + self.params_dic['e0']
-        bounds_O2SCd = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['O'], self.bounds_dic['O'], self.bounds_dic['e0']))
-        params_O2SCd = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['O'] + self.params_dic['O'] + self.params_dic['e0']
+        bounds_O2S = np.vstack((self.bounds_dic['S'], self.bounds_dic['O'], self.bounds_dic['O2'], self.bounds_dic['e0']))
+        params_O2S = self.params_dic['S']  + self.params_dic['O'] + self.params_dic['O2'] + self.params_dic['e0']
         bounds_O2SCd2 = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['Cd'], self.bounds_dic['O'], self.bounds_dic['O'], self.bounds_dic['e0']))
         params_O2SCd2 = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['Cd'] + self.params_dic['O'] + self.params_dic['O'] + self.params_dic['e0']
 
@@ -594,19 +594,34 @@ class exafs_func():
 
 
     def LLE_model_OSCd(self, params):
+        e = params[-1]
+        exp = np.vstack((self.k_original,self.experiment_original)).transpose()
+        k_new=np.sqrt(self.k**2-0.2625*e)
+        # print(k_new)
+        exp = self.interpolation(exp,k_new)
         model = self.EXAFS_model_OSCd(self.k, *params[:-1])
-        LL = -np.sum(stats.norm.logpdf(self.experiment * self.k ** self.weight, loc=model))
+        LL = -np.sum(stats.norm.logpdf(exp * self.k ** self.weight, loc=model))
         return LL
 
     def LLE_model_OSCd2(self, params):
+        e = params[-1]
+        exp = np.vstack((self.k_original,self.experiment_original)).transpose()
+        k_new=np.sqrt(self.k**2-0.2625*e)
+        # print(k_new)
+        exp = self.interpolation(exp,k_new)
         model = self.EXAFS_model_OSCd2(self.k, *params[:-1])
-        LL = -np.sum(stats.norm.logpdf(self.experiment * self.k ** self.weight, loc=model))
+        LL = -np.sum(stats.norm.logpdf(exp * self.k ** self.weight, loc=model))
         return LL
 
-    # def LLE_model_O2SCd(self, params):
-    #     model = self.EXAFS_model_O2SCd(self.k, *params[:-1])
-    #     LL = -np.sum(stats.norm.logpdf(self.experiment * self.k ** self.weight, loc=model))
-    #     return LL
+    def LLE_model_O2S(self, params):
+        e = params[-1]
+        exp = np.vstack((self.k_original,self.experiment_original)).transpose()
+        k_new=np.sqrt(self.k**2-0.2625*e)
+        # print(k_new)
+        exp = self.interpolation(exp,k_new)
+        model = self.EXAFS_model_O2S(self.k, *params[:-1])
+        LL = -np.sum(stats.norm.logpdf(exp * self.k ** self.weight, loc=model))
+        return LL
     #
     # def LLE_model_O2SCd2(self, params):
     #     model = self.EXAFS_model_O2SCd2(self.k, *params[:-1])
@@ -614,171 +629,123 @@ class exafs_func():
     #     return LL
 
     def LLE_model_OS(self, params):
+        e = params[-1]
+        exp = np.vstack((self.k_original,self.experiment_original)).transpose()
+        k_new=np.sqrt(self.k**2-0.2625*e)
+        # print(k_new)
+        exp = self.interpolation(exp,k_new)
         model = self.EXAFS_model_OS(self.k, *params[:-1])
-        LL = -np.sum(stats.norm.logpdf(self.experiment * self.k ** self.weight, loc=model))
+        LL = -np.sum(stats.norm.logpdf(exp * self.k ** self.weight, loc=model))
         return LL
 
     def LLE_model_SCd(self, params):
+        e = params[-1]
+        # print(*params)
+        exp = np.vstack((self.k_original,self.experiment_original)).transpose()
+        k_new=np.sqrt(self.k**2-0.2625*e)
+        # print(k_new)
+        # print('e',e)
+        # print('knew',len(k_new),k_new)
+        # print('exp',len(exp),exp)
+        exp = self.interpolation(exp,k_new)
         model = self.EXAFS_model_SCd(self.k, *params[:-1])
-        LL = -np.sum(stats.norm.logpdf(self.experiment * self.k ** self.weight, loc=model))
+        LL = -np.sum(stats.norm.logpdf(exp * self.k ** self.weight, loc=model))
         return LL
 
     def LLE_model_COS(self, params):
+        e = params[-1]
+        exp = np.vstack((self.k_original,self.experiment_original)).transpose()
+        k_new=np.sqrt(self.k**2-0.2625*e)
+        exp = self.interpolation(exp,k_new)
         model = self.EXAFS_model_COS(self.k, *params[:-1])
-        LL = -np.sum(stats.norm.logpdf(self.experiment * self.k ** self.weight, loc=model))
+        LL = -np.sum(stats.norm.logpdf(exp * self.k ** self.weight, loc=model))
         return LL
 
     def LLE_model_COSCd(self, params):
+        e = params[-1]
+        exp = np.vstack((self.k_original,self.experiment_original)).transpose()
+        k_new=np.sqrt(self.k**2-0.2625*e)
+        exp = self.interpolation(exp,k_new)
         model = self.EXAFS_model_COSCd(self.k, *params[:-1])
-        LL = -np.sum(stats.norm.logpdf(self.experiment * self.k ** self.weight, loc=model))
+        LL = -np.sum(stats.norm.logpdf(exp * self.k ** self.weight, loc=model))
         return LL
 
 
-    def LLE_fit(self):
-        bounds_OSCd = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['O'], self.bounds_dic['e0'],
-                                 self.bounds_dic['sd']))
-        params_OSCd = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['O'] + self.params_dic['e0'] + self.params_dic['sd']
-        bounds_OSCd2 = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['Cd2'], self.bounds_dic['O'], self.bounds_dic['e0'],
-                                 self.bounds_dic['sd']))
-        params_OSCd2 = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['Cd2'] + self.params_dic['O'] + self.params_dic['e0'] + self.params_dic['sd']
-        bounds_O2SCd = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['O'], self.bounds_dic['O'], self.bounds_dic['e0'], self.bounds_dic['sd']))
-        params_O2SCd = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['O'] + self.params_dic['O'] + self.params_dic['e0'] + self.params_dic['sd']
-        bounds_O2SCd2 = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['Cd'], self.bounds_dic['O'], self.bounds_dic['O'], self.bounds_dic['e0'], self.bounds_dic['sd']))
-        params_O2SCd2 = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['Cd2'] + self.params_dic['O'] + self.params_dic['O'] + self.params_dic['e0'] + self.params_dic['sd']
-        bounds_OS = np.vstack((self.bounds_dic['S'], self.bounds_dic['O'], self.bounds_dic['e0'], self.bounds_dic['sd']))
-        params_OS = self.params_dic['S'] + self.params_dic['O'] + self.params_dic['e0'] + self.params_dic['sd']
-        bounds_SCd = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['e0'], self.bounds_dic['sd']))
-        params_SCd = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['e0'] + self.params_dic['sd']
-        bounds_COS = np.vstack((self.bounds_dic['S'], self.bounds_dic['O'], self.bounds_dic['C'], self.bounds_dic['e0'],
-                                self.bounds_dic['sd']))
-        params_COS = self.params_dic['S'] + self.params_dic['O'] + self.params_dic['C'] + self.params_dic['e0'] + self.params_dic['sd']
-        bounds_COSCd = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['O'], self.bounds_dic['C'], self.bounds_dic['e0'],
-                                   self.bounds_dic['sd']))
-        params_COSCd = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['O'] + self.params_dic['C'] + self.params_dic['e0']  \
-                       + self.params_dic['sd']
+
+    def fit_shell(self,shell,fit_num,n):
+        bounds_OSCd = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['O'], self.bounds_dic['e0']))
+        params_OSCd = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['O'] + self.params_dic['e0']
+        bounds_OSCd2 = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['Cd2'], self.bounds_dic['O'], self.bounds_dic['e0']))
+        params_OSCd2 = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['Cd2'] + self.params_dic['O'] + self.params_dic['e0']
+        bounds_O2S = np.vstack((self.bounds_dic['S'], self.bounds_dic['O'], self.bounds_dic['O2'], self.bounds_dic['e0']))
+        params_O2S = self.params_dic['S'] + self.params_dic['O'] + self.params_dic['O2'] + self.params_dic['e0']
+        bounds_O2SCd2 = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['Cd'], self.bounds_dic['O'], self.bounds_dic['O'], self.bounds_dic['e0']))
+        params_O2SCd2 = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['Cd2'] + self.params_dic['O'] + self.params_dic['O'] + self.params_dic['e0']
+        bounds_OS = np.vstack((self.bounds_dic['S'], self.bounds_dic['O'], self.bounds_dic['e0']))
+        params_OS = self.params_dic['S'] + self.params_dic['O'] + self.params_dic['e0']
+        bounds_SCd = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['e0']))
+        params_SCd = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['e0']
+        bounds_COS = np.vstack((self.bounds_dic['S'], self.bounds_dic['O'], self.bounds_dic['C'], self.bounds_dic['e0']))
+        params_COS = self.params_dic['S'] + self.params_dic['O'] + self.params_dic['C'] + self.params_dic['e0']
+        bounds_COSCd = np.vstack((self.bounds_dic['S'], self.bounds_dic['Cd'], self.bounds_dic['O'], self.bounds_dic['C'], self.bounds_dic['e0']))
+        params_COSCd = self.params_dic['S'] + self.params_dic['Cd'] + self.params_dic['O'] + self.params_dic['C'] + self.params_dic['e0']
         # print(params_SCd)
-        plt.figure()
-        # SCd shell
+        exp = np.vstack((self.k_original,self.experiment_original)).transpose()
 
-        LLE_fitresult1 = minimize(self.LLE_model_SCd, params_SCd, method='trust-constr', bounds=bounds_SCd,
-                                  options={'maxiter': 12000})
-        print('SCd: ', LLE_fitresult1)
-        fit_y1 = self.EXAFS_model_SCd(self.k, *LLE_fitresult1.x[:-1])
-        plt.plot(self.k, fit_y1, linewidth=self.linewidth, label='LLE = {:f} for SCd shell'.format(self.LLE_model_SCd(LLE_fitresult1.x)))
 
-        #OS shell
-        LLE_fitresult2 = minimize(self.LLE_model_OS, params_OS, method='trust-constr',
-                                  bounds=bounds_OS, options={'maxiter': 12000})
-        print('OS: ', LLE_fitresult2)
-        fit_y2 = self.EXAFS_model_OS(self.k, *LLE_fitresult2.x[:-1])
-        plt.plot(self.k, fit_y2, linewidth=self.linewidth, label='LLE = {:f} for OS shell'.format(self.LLE_model_OS(LLE_fitresult2.x)))
-        # OSCd shell
-        LLE_fitresult3 = minimize(self.LLE_model_OSCd, params_OSCd, method='trust-constr',
-                                  bounds=bounds_OSCd, options={'maxiter': 12000})
-        print('OSCd: ', LLE_fitresult3)
-        fit_y3 = self.EXAFS_model_OSCd(self.k, *LLE_fitresult3.x[:-1])
-        plt.plot(self.k, fit_y3, linewidth=self.linewidth, label='LLE = {:f} for OSCd shell'.format(self.LLE_model_OSCd(LLE_fitresult3.x)))
+        plt.subplot(fit_num,2,1+n*2)
+        # print('bound',len(bounds_SCd),bounds_SCd)
+        model_shell = eval('self.LLE_model_'+shell)
 
-        # OSCdCd shell
-        LLE_fitresult6 = minimize(self.LLE_model_OSCd2, params_OSCd2, method='trust-constr',
-                                  bounds=bounds_OSCd2, options={'maxiter': 12000})
-        print('OSCdCd: ', LLE_fitresult6)
-        fit_y6 = self.EXAFS_model_OSCd2(self.k, *LLE_fitresult6.x[:-1])
-        plt.plot(self.k, fit_y6, linewidth=self.linewidth, label='LLE = {:f} for OSCdCd shell'.format(self.LLE_model_OSCd2(LLE_fitresult6.x)))
-
-        # # OOSCd shell
-        # LLE_fitresult7 = minimize(self.LLE_model_O2SCd, params_O2SCd, method='trust-constr',
-        #                           bounds=bounds_O2SCd, options={'maxiter': 12000})
-        # print('OOSCd: ', LLE_fitresult7)
-        # fit_y7 = self.EXAFS_model_O2SCd(self.k, *LLE_fitresult7.x[:-1])
-        # plt.plot(self.k, fit_y7, linewidth=self.linewidth, label='LLE = {:f} for OOSCd shell'.format(self.LLE_model_O2SCd(LLE_fitresult7.x)))
-        #
-        # # OOSCdCd shell
-        # LLE_fitresult8 = minimize(self.LLE_model_O2SCd2, params_O2SCd2, method='trust-constr',
-        #                           bounds=bounds_O2SCd2, options={'maxiter': 12000})
-        # print('OOSCdcD: ', LLE_fitresult8)
-        # fit_y8 = self.EXAFS_model_O2SCd2(self.k, *LLE_fitresult8.x[:-1])
-        # plt.plot(self.k, fit_y8, linewidth=self.linewidth, label='LLE = {:f} for OOSCdCd shell'.format(self.LLE_model_O2SCd2(LLE_fitresult8.x)))
-        #
-
-        # jacobian = self.jacobian
-        #
-        # def jac():
-        #     return jacobian(params_COS,[self.k,self.experiment],'COS')
-
-        # # COS shell
-        # LLE_fitresult4 = minimize(self.LLE_model_COS, params_COS, options={'maxiter': 12000},method='trust-constr',
-        #                            bounds=bounds_COS)
-        # print('COS: ', LLE_fitresult4)
-        # fit_y4 = self.EXAFS_model_COS(self.k, *LLE_fitresult4.x[:-1])
-        # plt.plot(self.k, fit_y4, linewidth=self.linewidth, label='LLE = {:f} for COS shell'.format(self.LLE_model_COS(LLE_fitresult4.x)))
-        #
-        # # COSCd shell
-        # LLE_fitresult5 = minimize(self.LLE_model_COSCd, params_COSCd, method='trust-constr',
-        #                           bounds=bounds_COSCd, options={'maxiter': 2000})
-        # print('COSCd: ', LLE_fitresult5)
-        # fit_y5 = self.EXAFS_model_COSCd(self.k, *LLE_fitresult5.x[:-1])
-        # plt.plot(self.k, fit_y5, linewidth=self.linewidth, label='LLE = {:f} for COSCd shell'.format(self.LLE_model_COSCd(LLE_fitresult5.x)))
-
-        # Experiment
-        plt.plot(self.k, self.experiment * self.k ** self.weight, 'k.', markersize=0.5, label=self.sample)
-        plt.title('Min Log Likelihood Estimate (LLE) curve fit')
+        bound_shell = eval('bounds_'+shell)
+        LLE_fitresult = differential_evolution(model_shell,bounds=bound_shell,strategy='randtobest1exp', popsize=150 ,maxiter=10000)
+        print(shell,': ', LLE_fitresult)
+        e = LLE_fitresult.x[-1]
+        k_new=np.sqrt(self.k**2-0.2625*e)
+        exp_new = self.interpolation(exp,k_new)
+        fit_y = eval('self.EXAFS_model_'+shell+'(self.k, *LLE_fitresult.x[:-1])')
+        plt.plot(self.k, fit_y, linewidth=self.linewidth, label='{:s} shell'.format(shell))
+        plt.plot(self.k,exp_new*self.k**2,'k.', markersize=0.5, label=self.sample)
         plt.legend(fontsize=5)
         plt.xlabel('K')
+        plt.yticks([])
         plt.ylabel('Chi')
-        plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/fitLLE.pdf',format='pdf')
-        plt.show()
-
-        # difference between fit and experiment
-        plt.figure()
-        plt.plot(self.k, fit_y1 - self.experiment * self.k ** self.weight, linewidth=self.linewidth, label='SCd')
-        plt.plot(self.k, fit_y2 - self.experiment * self.k ** self.weight, linewidth=self.linewidth, label='OS')
-        plt.plot(self.k, fit_y3 - self.experiment * self.k ** self.weight, linewidth=self.linewidth, label='OSCd')
-        # plt.plot(self.k, fit_y4 - self.experiment * self.k ** self.weight, linewidth=self.linewidth, label='COS')
-        # plt.plot(self.k, fit_y5 - self.experiment * self.k ** self.weight, linewidth=self.linewidth, label='COSCd')
-        plt.plot(self.k, fit_y6 - self.experiment * self.k ** self.weight, linewidth=self.linewidth, label='OSCdCd')
-        # plt.plot(self.k, fit_y7 - self.experiment * self.k ** self.weight, linewidth=self.linewidth, label='OOSCd')
-        # plt.plot(self.k, fit_y8 - self.experiment * self.k ** self.weight, linewidth=self.linewidth, label='OOSCdCd')
-        plt.title('difference')
-        plt.legend(fontsize=5)
-        plt.xlabel('K')
-        plt.ylabel('Chi')
-        plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/fitLLE_dif.pdf',format='pdf')
-        plt.show()
-
-        # FT of difference
-        plt.figure()
-        #
-        r,amp,real,imag = calcfft(self.k, fit_y1 - self.experiment * self.k **3 )
-        plt.plot(r, amp, linewidth=self.linewidth, label='SCd')
-
-        r,amp,real,imag = calcfft(self.k, fit_y2 - self.experiment * self.k **3 )
-        plt.plot(r, amp, linewidth=self.linewidth, label='OS')
-
-        r,amp,real,imag = calcfft(self.k, fit_y3 - self.experiment * self.k **3 )
-        plt.plot(r, amp, linewidth=self.linewidth, label='OSCd')
-
-        # r,amp = calcfft(self.k, fit_y4 - self.experiment * self.k ** self.weight )
-        # plt.plot(r, amp, linewidth=self.linewidth, label='COS')
-        #
-        # r,amp = calcfft(self.k, fit_y5 - self.experiment * self.k ** self.weight )
-        # plt.plot(r, amp, linewidth=self.linewidth, label='COSCd')
-        r,amp,real,imag = calcfft(self.k, fit_y6 - self.experiment * self.k **3 )
-        plt.plot(r, amp, linewidth=self.linewidth, label='OSCdCd')
-        # r,amp = calcfft(self.k, fit_y7 - self.experiment * self.k ** self.weight )
-        # plt.plot(r, amp, linewidth=self.linewidth, label='OOSCd')
-        # r,amp = calcfft(self.k, fit_y8 - self.experiment * self.k ** self.weight )
-        # plt.plot(r, amp, linewidth=self.linewidth, label='OOSCdCd')
-
+        plt.tight_layout()
+        plt.subplot(fit_num,2,2+n*2)
+        r,amp,real,img = calcfft(self.k,fit_y*self.k)
+        plt.plot(r,amp, linewidth= self.linewidth, label = shell)
+        r,amp,real,img = calcfft(self.k, exp_new * self.k**3)
+        plt.plot(r,amp,'k.',label = self.sample,markersize=0.5)
         plt.xlim([0,5])
-        plt.legend(fontsize=5)
-        plt.title('FT of difference')
-        #plt.ylim([0,1])
         plt.xlabel('R')
-        plt.ylabel('amp')
-        plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/FT_fitLLE_diff.pdf',format='pdf')
+        plt.yticks([])
+        plt.legend(fontsize=5)
+        plt.title('Fourier Transform')
+        plt.tight_layout()
+        # plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/{:s}fit_{:s}.pdf'.format(self.sample,shell),format='pdf')
+        # plt.show()
+
+    def LLE_fit(self):
+
+        x1 = 'SCd'
+        x2 = 'OS'
+        x3 = 'OSCd'
+        x4 = 'OSCd2'
+        x5 = 'O2S'
+        fits = (x1,x2,x3,x4,x5)
+        fit_num = len(fits)
+        width_lib = [6,10]
+        fig_width = width_lib[(np.abs(width_lib - self.k_max)).argmin()]
+        plt.figure(figsize=(fig_width,3*fit_num))
+        for n,shell in enumerate(fits):
+            self.fit_shell(shell,fit_num,n)
+        plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/{:s}fit.pdf'.format(self.sample),format='pdf')
         plt.show()
-        return fit_y1, fit_y2, fit_y3,  fit_y6
+
+
+        # plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/FT_fitLLE_diff.pdf',format='pdf')
+        # plt.show()
+        return
 
 
 
