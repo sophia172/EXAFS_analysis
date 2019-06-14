@@ -8,9 +8,9 @@ class exafs_func():
     linewidth = 0.5
     weight = 2
     params_dic = {'O': [7.8, 2.4, 0.02528],'O2': [7.8, 2.4, 0.02528], 'Cd': [3, 3.8, 0.06], 'Cd2': [3, 3.4, 0.07],'S': [4, 2.5165, 0.006], 'C':[2,1.5,0.01], 'sd': [1], 'e0': [0]}
-    bounds_dic = {'S': np.array([(1, 6), (2.4, 2.6), (0.002, 0.008)]),
-                  'Cd': np.array([(3, 12), (3.5, 4.0), (0.01, 0.1)]),
-                  'Cd2': np.array([(3, 12), (3.8, 4.3), (0.01, 0.1)]),
+    bounds_dic = {'S': np.array([(1, 4), (2.4, 2.6), (0.003, 0.01)]),
+                  'Cd': np.array([(1, 12), (3.5, 4.5), (0.01, 0.1)]),
+                  'Cd2': np.array([(3, 12), (3.8, 4.5), (0.005, 0.1)]),
                   'O': np.array([(1, 12), (2.1, 2.5), (0.001, 0.05)]),
                   'O2': np.array([(1, 12), (3, 5), (0.001, 0.5)]),
                   'C': np.array([(0, 6), (1, 4), (0.001, 0.2)]),
@@ -32,8 +32,8 @@ class exafs_func():
         if fitted_curve == 'athena':
             if sample == 'bulk':
                 experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_bulk_Aug18_CdK_90K_tran.chiq')
-                self.k_original =experiments[:,0]
-                self.experiment_original = experiments[:,1]
+                self.k_original =experiments[1:,0]
+                self.experiment_original = experiments[1:,1]/self.k_original**2
             elif sample == 'M311':
                 experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_XAFS_CdK_chi_2018.txt')
                 self.k_original = experiments[:, 0]

@@ -67,9 +67,34 @@ def calcfft(kdata,k3xafsdata,kmin=2.4,kmax=16,windowType='hanning'):
 
     # Return magnitude, real and imaginary data
     r = arange(0,len(data)*DR,DR)
-    return r,data,realdata,imagdata
+    return r,data,real,imag
 
 
+def calcifft(chir, nfft=2048):
+    """
+    calculate reverse XAFS Fourier transform, from chi(R) to
+    chi(q), using common XAFS conventions.  This version demands
+    chir be the complex chi(R) as created from xftf().
+
+    It returns the complex array of chi(q) without putting any
+    values into an output group.
+
+    Parameters:
+    -------------
+      chir:     1-d array of chi(R) to be transformed
+      nfft:     value to use for N_fft (2048).
+      kstep:    value to use for delta_k (0.05).
+
+    Returns:
+    ----------
+      complex 1-d array for chi(q).
+
+    This is useful for repeated FTs, as inside loops.
+    """
+    kstep= np.pi/(fftPOINTS*DR)
+    cchi = zeros(nfft, dtype='complex128')
+    cchi[0:len(chir)] = chir
+    return  (4*sqrt(pi)/kstep) * np.fft.ifft(cchi)[:int(nfft/2)]
 
 def plot_fit_FT(sample, fit_method='LLE'):
     if fit_method == 'LLE':

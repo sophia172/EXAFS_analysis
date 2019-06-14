@@ -12,7 +12,7 @@ from numdifftools import Jacobian
 from math import sqrt,pi,pow
 from numpy import *
 from scipy.constants import *
-
+from scipy.signal import *
 from numpy import linalg
 #from scipy import *
 from numpy import fft
