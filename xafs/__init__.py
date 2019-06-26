@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d,UnivariateSpline,LSQUnivariateSpline
 from scipy.optimize import curve_fit
 import glob
 from scipy import stats
@@ -18,7 +18,6 @@ from numpy import linalg
 from numpy import fft
 from time import time
 import numpy
-
 
 from xafs.FT import *
 from xafs.def_sample import *

@@ -7,7 +7,7 @@ fftPOINTS=1048 #number of fft points; works best if equal to 2^n
 
 
 
-def calcfft(kdata,k3xafsdata,kmin=2.4,kmax=16,windowType='hanning'):
+def calcfft(kdata,k3xafsdata,kmin=3,kmax=19,windowType='hanning'):
     #calculate dk
     dk=pi/(fftPOINTS*DR)
     # 1/sqrt(pi)
@@ -67,7 +67,7 @@ def calcfft(kdata,k3xafsdata,kmin=2.4,kmax=16,windowType='hanning'):
 
     # Return magnitude, real and imaginary data
     r = arange(0,len(data)*DR,DR)
-    return r,data,real,imag
+    return r,data,realdata,imagdata
 
 
 def calcifft(chir, nfft=2048):
