@@ -25,4 +25,8 @@ from xafs.FEFF_cal import *
 from xafs.ratio_fit import *
 from xafs.artemis_FITplot import *
 
+import pylab, os, numpy, getpass, wx
+import sys
+
+
 

@@ -2,6 +2,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from xafs import *
 from scipy.optimize import curve_fit
+from scipy.signal import *
 
 def interpolation(f, x):
     g = interp1d(f[:, 0], f[:, 1])
@@ -30,9 +31,9 @@ experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c
 k = experiments[:,0]
 weight=2
 
-k_min = (np.abs(k - 2.5)).argmin()
+k_min = (np.abs(k - 3)).argmin()
 k_max = (np.abs(k - 18)).argmin()
-k_fit = k[k_min:k_max]
+k_fit = np.linspace(k[k_min],k[k_max],400)
 
 # exp = exp[k_min:k_max]
 
@@ -103,33 +104,39 @@ def calc_phase(shell):
     data1 = data[:,1]
     data2 = data[:,2]
     data3 = data[:,3]
-    k_fine = np.linspace(3,18,25601)
+    k_fine = np.linspace(2.5,18,51201)
     # interpolate each file with k_fine
     k = np.sqrt((data[:,0]+e)/3.81)
     chi1= data1
     exp = np.vstack((k,chi1)).transpose()
     chi1 = interpolation(exp,k_fine)
+    chi1_fit = interpolation(exp,k_fit)
 
 
     chi2= data2
     exp = np.vstack((k,chi2)).transpose()
     chi2 = interpolation(exp,k_fine)
+    chi2_fit = interpolation(exp,k_fit)
 
     chi3= data3
     exp = np.vstack((k,chi3)).transpose()
     chi3 = interpolation(exp,k_fine)
+    chi3_fit = interpolation(exp,k_fit)
 
 
     if shell == 1:
         chi = chi1
+        chi_fit = chi1_fit
         R = 2.45
     elif shell == 2:
         chi = chi2-chi1
+        chi_fit = chi2_fit-chi1_fit
         R = 4.0
     elif shell == 3:
         chi = chi3-chi2
+        chi_fit = chi2_fit-chi1_fit
         R = 4.69
-    correction = 2* pi *5
+    correction = 0
 
 
 
@@ -145,20 +152,20 @@ def calc_phase(shell):
     phase_knot = np.array([])
     phase_peak = np.array([])
     if index[0] in peak_index:
-        # print('curve start with peak',index)
+        print('curve start with peak',index)
         for n,i in enumerate(index):
             phase_knot = np.append(phase_knot, (pi/2 *(n+1)+ correction - 2 * k_fine[i] *R))
             # print('2kR: ',2 * k_fine[i] *R)
     elif index[0] in valley_index:
-        # print('curve start with valley')
+        print('curve start with valley')
         for n,i in enumerate(index):
             phase_knot = np.append(phase_knot, pi/2 *(n+3) - 2 * k_fine[i] *R + correction)
     elif index[1] in peak_index:
-        # print('curve start with 0 then peak')
+        print('curve start with 0 then peak')
         for n,i in enumerate(index):
             phase_knot = np.append(phase_knot, pi/2 *n - 2 * k_fine[i] *R + correction)
     elif index[1] in valley_index:
-        # print('curve start with 0 then valley')
+        print('curve start with 0 then valley')
         for n,i in enumerate(index):
             phase_knot = np.append(phase_knot, pi/2 *(n+2) - 2 * k_fine[i] *R + correction)
     k_knot = k_fine[index]
@@ -175,25 +182,17 @@ def calc_phase(shell):
     chi_zero = chi[zero_index]
 
 
-
     phase_FEFF = np.vstack((k_fit,eval('phase'+ str(shell)))).transpose()
     phase_FEFF = interpolation(phase_FEFF,k_knot)
 
-    # def model_phaseWOFEFF(x,a,b,c,d):
-    #     return a*x**3 + b*x**2 + c*x + d
-    # def model_phase(x,a,b,c,d):
-    #     return model_phaseWOFEFF(x,a,b,c,d) + phase_FEFF
-    #
-    # popt, pcov = curve_fit(model_phase,k_knot,phase_knot)
-    # global phase
-    # phase = model_phaseWOFEFF(k_fit,*popt[:4]) + eval('phase'+ str(shell))
-    # print('phase: ',*popt)
 
-    spline_knot = int(len(k_knot)/6)
-    t= [k_knot[spline_knot],k_knot[spline_knot*2],k_knot[spline_knot*3],k_knot[spline_knot*4],k_knot[spline_knot*5]]
-    spl = LSQUnivariateSpline(k_knot,phase_knot/phase_FEFF,t)
-    phase = spl(k_fit)*eval('phase'+str(shell))
-    ############################################# show the experiemnt point we used to fit
+
+    spline_knot = int(len(k_knot)/12)
+    t= [k_knot[spline_knot],k_knot[spline_knot*2],k_knot[spline_knot*3],k_knot[spline_knot*4],k_knot[spline_knot*5],k_knot[spline_knot*6],k_knot[spline_knot*7],k_knot[spline_knot*8],k_knot[spline_knot*9],k_knot[spline_knot*10],k_knot[spline_knot*11]]
+    spl = LSQUnivariateSpline(k_knot,phase_knot,t)
+    phase = spl(k_fit)
+
+    # ############################################# show the experiemnt point we used to fit
     plt.figure()
     plt.plot(k_fine,chi,label='exp')
     plt.plot(k_peak,chi_peak,'.',label='peak')
@@ -203,27 +202,33 @@ def calc_phase(shell):
     plt.xlabel('k ($\AA^{-1}$)')
     plt.title('find knot point in shell %d'%shell)
     plt.show()
-    ###
-    #       Plot calculated phase compared with FEFF calculated one
-    ###
-    ############################################# show the difference between calcuated phase and FEFF phase
+    # ###
+    # #       Plot calculated phase compared with FEFF calculated one
+    # ###
+    # ############################################# show the difference between calcuated phase and FEFF phase
     plt.figure()
     plt.plot(k_knot,phase_knot,'.')
-    # plt.plot(k_fine_peak,phase_peak,'.',label='peak')
-    # plt.plot(k_fine_valley,phase_valley,'.',label='valley')
-    # plt.plot(k_fine_zero,phase_zero,'.',label='zero')
     plt.plot(k_fit,phase,label='phase')
     plt.plot(k_fit,eval('phase'+str(shell)),label='previous calculated phase')
-    # plt.xlim([3,6])
-    # plt.ylim([30,40])
     plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('phase fit in shell %d'%shell)
+    plt.title('calculated phase in shell %d'%shell)
     plt.legend()
     plt.show()
 
     ###
-    #       Plot chi with calculated phase and FEFF result
+    #       Plot sin wave with calculated phase
     ###
+    zero=np.zeros(len(k_fit))
+    plt.figure()
+    plt.plot(k_fit,chi_fit,'.',markersize=0.5)
+    plt.plot(k_fit,np.sin(2*k_fit*R+phase)*np.amax(chi)/2,linewidth = 0.5,label='sin wave with phase')
+    plt.plot(k_fit,np.sin(2*k_fit*R+phase)*np.amax(chi)/2-chi_fit,linewidth = 0.5,label='difference')
+    plt.plot(k_fit,zero,linewidth = 0.5)
+    # plt.xlim([4.75,5.25])
+    plt.xlabel('k ($\AA^{-1}$)')
+    plt.title('phase fit in shell %d'%shell)
+    plt.legend()
+    plt.show()
     return phase
 
 ###############################################################
@@ -240,7 +245,7 @@ def calc_Feff(shell):
     data1 = data[:,1]
     data2 = data[:,2]
     data3 = data[:,3]
-    k_fine = np.linspace(3,18,25601)
+    k_fine = np.linspace(2,18,51201)
     # interpolate each file with k_fine
     k = np.sqrt((data[:,0]+e)/3.81)
     chi1= data1
@@ -295,15 +300,84 @@ def calc_Feff(shell):
                * np.exp(-2 * ss * k_fit ** 2)
     # print(shape(k_fit),shape(phase1),shape(lambda1))
     # print(chi_fit)
-    spline_knot = int(len(k_peak)/6)
-    t= [k_peak[spline_knot],k_peak[spline_knot*2],k_peak[spline_knot*3],k_peak[spline_knot*4],k_peak[spline_knot*5]]
+    spline_knot = int(len(k_peak)/7)
+    t= [k_peak[spline_knot],k_peak[spline_knot*2],k_peak[spline_knot*3],k_peak[spline_knot*4],k_peak[spline_knot*5],k_peak[spline_knot*6]]
     spl = LSQUnivariateSpline(k_peak,chi_peak/EXAFSmodelWOfeff(k_peak,phase_FEFF,lambda_FEFF),t)
     Feff = spl(k_fit)
 
     print('Feff:  ',Feff)
 
+###############################################################
+##
+#
+#  Calculate amp
+#
+#  1. define e0 = 14.4
+#  2. Withdraw knot position and calculate phase
+#
+###################################################################
+def calc_amp(shell):
+    data = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi.xmu')
+    data1 = data[:,1]
+    data2 = data[:,2]
+    data3 = data[:,3]
+    k_fine = np.linspace(2.5,18,51201)
+    # interpolate each file with k_fine
+    k = np.sqrt((data[:,0]+e)/3.81)
+    chi1= data1
+    exp = np.vstack((k,chi1)).transpose()
+    chi1_fine = interpolation(exp,k_fine)
 
-    ############################################# show the experiemnt point we used to fit
+
+    chi2= data2
+    exp = np.vstack((k,chi2)).transpose()
+    chi2_fine = interpolation(exp,k_fine)
+
+    chi3= data3
+    exp = np.vstack((k,chi3)).transpose()
+    chi3_fine = interpolation(exp,k_fine)
+
+    if shell == 1:
+        chi_fine = chi1_fine
+        chi = chi1
+        R = 2.45
+        N = 4
+
+    elif shell == 2:
+        chi_fine = chi2_fine-chi1_fine
+        chi = chi2-chi1
+        R = 4.0
+        N = 12
+
+    elif shell == 3:
+        chi_fine = chi3_fine-chi2_fine
+        chi = chi3-chi2
+        R = 4.69
+        N = 12
+
+
+    chi_fit = interpolation(np.vstack((k,chi)).transpose(),k_fit)
+    peak_index = find_peaks(abs(chi_fine),prominence=0.0001,distance=10)[0]
+    k_peak = k_fine[peak_index]
+    chi_peak = chi_fine[peak_index]
+
+
+    def EXAFSmodelWOfeff(k_fit,phase):
+        return np.sin(2 * k_fit * R +  phase) \
+
+
+    spline_knot = int(len(k_peak)/8)
+    t= [k_peak[spline_knot],k_peak[spline_knot*2],k_peak[spline_knot*3],k_peak[spline_knot*4],k_peak[spline_knot*5],k_peak[spline_knot*6],k_peak[spline_knot*7]]
+    spl = LSQUnivariateSpline(k_peak,np.abs(chi_peak),t)
+    amp = spl(k_fit)
+    amp1 = np.abs(hilbert(chi_fit))
+    Feff = amp/N/np.exp(-2*ss*k_fit**2)/np.exp(-2*R/eval('lambda'+ str(shell)))*k_fit*R**2
+
+    # print('amp:  ',amp)
+
+
+
+    # ############################################# show the experiemnt point we used to fit
     plt.figure()
     plt.plot(k_fine,chi_fine,label='exp')
     plt.plot(k_peak,chi_peak,'.',label='peak')
@@ -312,29 +386,79 @@ def calc_Feff(shell):
     plt.xlabel('k ($\AA^{-1}$)')
     plt.title('find Feff point in shell %d'%shell)
     plt.show()
-
-    ############################################# show the difference between calcuated Feff and FEFF feff
+    #
+    # # # ############################################# show the difference between calcuated Feff and FEFF amp
     plt.figure()
-    plt.plot(k_peak,chi_peak/EXAFSmodelWOfeff(k_peak,phase_FEFF,lambda_FEFF),'.')
-    plt.plot(k_fit,Feff,label='calculated Feff')
-    plt.plot(k_fit,eval('Feff'+str(shell)),label='previous calcuated Feff')
-    # plt.xlim([3,6])
-    # plt.ylim([30,40])
+    plt.plot(k_fit,chi_fit,'.',label='experiment',markersize=0.8)
+    plt.plot(k_fit,amp,label='calculated amp',linewidth=0.5)
+    plt.plot(k_fit,amp1,label='hilbert amp',linewidth=0.5)
     plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('Feff fit in shell %d'%shell)
+    plt.title('amp fit in shell %d'%shell)
     plt.legend()
+    plt.savefig('/Users/Sophia/Desktop/amp_Ge_shell1.pdf',format='pdf')
+    plt.show()
+    #
+    # # ############################################# show the fit result from calculated amp
+    # plt.figure()
+    # plt.plot(k,chi,'.',label='experiment')
+    # plt.plot(k_fit,EXAFSmodelWOfeff(k_fit,eval('phase'+str(shell)))*amp,label= 'fitted result')
+    # plt.plot(k_fit,EXAFSmodelWOfeff(k_fit,eval('phase'+str(shell)))*amp-chi_fit,linewidth = '0.5',label='difference')
+    # plt.xlabel('k ($\AA^{-1}$)')
+    # plt.title('amp fit in shell %d'%shell)
+    # plt.legend()
+    # plt.show()
+    ############################################# #############################################
+    # # show phase calculated with amp
+    ############################################# #############################################
+    plt.figure()
+    sin_wave = chi_fit/amp
+    arcsin_wave = np.arcsin(sin_wave/np.amax(abs(sin_wave)))
+    phase = arcsin_wave - 2*k_fit*R
+
+    phase1 = np.unwrap(np.angle(hilbert(chi_fit)))+np.pi/2-2*k_fit*R
+
+    plt.plot(k_fit,sin_wave,label='sin wave',linewidth=1)
+    plt.plot(k_fit,arcsin_wave,label='arcsin',linewidth=1)
+    plt.plot(k_fit,phase,label='phase calculated with arcsin',linewidth=1)
+
+    plt.plot(k_fit,phase1,label='phase calculated with Hilbert',linewidth=1)
+    # plt.plot(k_fit,eval('phase'+str(shell)),label='FEFF calculated phase',linewidth=1)
+    plt.xlabel('k ($\AA^{-1}$)')
+    plt.title('phase calculated in shell%d'%shell)
+    plt.legend()
+    plt.savefig('/Users/Sophia/Desktop/sin()_Ge_shell1.pdf',format='pdf')
+    plt.show()
+    ############################################# #############################################
+    #
+    #     show fit result with calculating amp and phase
+    #
+    ############################################# #############################################
+    plt.figure()
+    plt.plot(k_fit,chi_fit * k_fit**2,label='experiment',linewidth=0.5)    # shell1 is 1.0916, shell2 is 1.2143.
+    plt.plot(k_fit,amp*sin(2*k_fit*R+phase)* k_fit**2*1.0916,label='fit',linewidth=0.5)
+    plt.plot(k_fit,amp1*sin(2*k_fit*R + phase1 )* k_fit**2,label='fit_Hilbert',linewidth=0.5)
+    plt.plot(k_fit,amp*sin(2*k_fit*R+phase)* k_fit**2*1.0916-chi_fit* k_fit**2,label='normalfit_difference',linewidth=0.5)
+    plt.plot(k_fit,amp*sin(2*k_fit*R+phase1)* k_fit**2-chi_fit* k_fit**2,label='Hilbertfit_difference',linewidth=0.5)
+    # plt.ylim([-0.01,0.01])
+    plt.legend()
+    plt.savefig('/Users/Sophia/Desktop/fit_Ge_shell1.pdf',format='pdf')
     plt.show()
 
-    ############################################# show the result from calculated Feff
+    ############################################# #############################################
+    #
+    #     Compare calculated Feff and FEFF calculated Feff
+    #
+    ############################################# #############################################
     plt.figure()
-    plt.plot(k,chi,label='experiment')
-    plt.plot(k_fit,EXAFSmodelWOfeff(k_fit,eval('phase'+str(shell)),eval('lambda'+str(shell)))*Feff)
+    plt.plot(k_fit,Feff,label='experiment calculated $\sigma^2$ = %f'%ss)
+    plt.plot(k_fit,eval('Feff'+ str(shell)),label='FEFF calculated')
     plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('Feff fit in shell %d'%shell)
+    plt.title('Feff calculated in shell%d'%shell)
     plt.legend()
+    plt.savefig('/Users/Sophia/Desktop/Feff_Ge_shell1.pdf',format='pdf')
     plt.show()
 
-    return Feff
+    return amp,phase
 
 # phase2 = calc_phase()
 # phase3 = calc_phase()
@@ -413,11 +537,12 @@ def EXAFS_model(x,N1,R1,ss1,N2,R2,ss2,N3,R3,ss3):
 
 
 params_dic = {'Ge1': [6, 2.35, 0.00234], 'Ge2': [12, 4, 0.005], 'Ge3': [12, 4.8, 0.006], 'e':[3], 'sd': [1]}
-bounds_dic = {'Ge1': np.array([(3.999, 4), (2.44, 2.46), (0.0001, 0.05)]),
+bounds_dic = {'Ge1': np.array([(3.999, 4), (2.449, 2.451), (0.0053, 0.0055)]),
               'Ge2': np.array([(11.999,12), (3.99, 4.01), (0.002, 0.05)]),
               'Ge3': np.array([(11.999,12), (4.68, 4.70), (0.002, 0.05)]),
+              'R' : np.array([(2.449, 2.451)]),
               'e': np.array([(0,20)]),
-              'S0': np.array([(0.8,1)]),
+              'S0': np.array([(0.99,1)]),
               'a':np.array([(-2,2)]),
               'b':np.array([(-20,20)])}
 
@@ -523,7 +648,7 @@ def Ge_shell(shell):
     data2 = data[:,2]
     data3 = data[:,3]
 
-    k_fine = np.linspace(3,18,12801)
+    k_fine = np.linspace(3,18,51201)
     # interpolate each file with k_fine
 
     k = np.sqrt(data[:,0]/3.81)
@@ -545,10 +670,11 @@ def Ge_shell(shell):
                * np.exp(-2 * R /  eval('lambda'+str(shell))) \
                * np.exp(-2 * ss * x ** 2)
 
+    def model_amp(x,R):
+        return amp * np.sin(2 * x * R +  eval('phase'+str(shell))) * x ** weight
 
-
-    bounds = np.vstack((bounds_dic['Ge'+str(shell)], bounds_dic['S0'], bounds_dic['e']))
-
+    # bounds = np.vstack((bounds_dic['Ge'+str(shell)], bounds_dic['S0'], bounds_dic['e']))
+    bounds = np.vstack((bounds_dic['R'], bounds_dic['S0'], bounds_dic['e']))
 
     def LLE_model(params):
         global exp,model
@@ -560,13 +686,13 @@ def Ge_shell(shell):
         # print('k_new',k_new)
         g = interp1d(k_new,chi)
         exp_fit = g(k_fit.tolist())/S0
-        model_LLE = model_shell(k_fit, *params[:-2])
+        model_LLE = model_amp(k_fit, *params[:-2])
         LL = -np.sum(stats.norm.logpdf(exp_fit * k_fit**weight, loc=model_LLE))
         return LL
 
 
     LLE_fitresult = differential_evolution(LLE_model,bounds=bounds,strategy='best1exp', popsize=200,maxiter=10000)
-    fit_LLE = model_shell(k_fit, *LLE_fitresult.x[:-2])
+    fit_LLE = model_amp(k_fit, *LLE_fitresult.x[:-2])
     LL = LLE_model(LLE_fitresult.x)
     e=LLE_fitresult.x[-1]
     S0=LLE_fitresult.x[-2]
@@ -654,7 +780,7 @@ def calc_Feff_phase():
     for a in params:
         label_result = label_result + a + '\n'
 
-    S0 = 0.96
+    S0 = 1
     k_new = np.sqrt(k_fit**2-0.2625*e)
     exp_new = interpolation(exp,k_new)/S0
 
@@ -703,18 +829,28 @@ def use_calc_4_fit(shell):
 # use_calc_4_fit(3)
 
 #
+#
+# for i in range(8):
+#     if i == 0 :
+#         e = 14.4
+#         ss = 0.0054
+#         phase1 = calc_phase(1)
+#         Feff1 = calc_Feff(1)
+#     e,ss = Ge_shell(1)
+#     phase1 = calc_phase(1)
+#     Feff1 = calc_Feff(1)
+#
+# e,ss = Ge_shell(1)
+# data = np.vstack((k_fit,Feff1,phase1,lambda1)).transpose()
+# np.savetxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/FEFF1fromEXP.dat',data,header='k,Feff,phase,lambda')
 
-for i in range(2):
-    if i ==0:
-        phase1 = phase1  # To start the convergence, I need to set FEFF output to start the loop
-        Feff1 = calc_Feff(1)
-        e,ss = Ge_shell(1)
-    else:
-        phase1 = calc_phase(1)
-        Feff1 = calc_Feff(1)
-        e,ss = Ge_shell(1)
-data = np.vstack((k_fit,Feff1,phase1,lambda1)).transpose()
-np.savetxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/FEFF1fromEXP.dat',data,header='k,Feff,phase,lambda')
+for i in range(1):
+    if i == 0:
+        e = 14.4
+        ss = 0.0032
+
+    # phase1 = calc_phase(1)
+    amp,phase1 = calc_amp(1)
 
 
 
