@@ -1,339 +1,605 @@
 
-from xafs import *
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d,UnivariateSpline,LSQUnivariateSpline
+from scipy.optimize import curve_fit
+import glob
+from scipy import stats
+from scipy.optimize import *
+# from numdifftools import Jacobian
+from math import sqrt,pi,pow
+from numpy import *
+from scipy.constants import *
+from scipy.signal import *
+from numpy import linalg
+import seaborn as sns
+from scipy.stats import norm
+
+
+# import pylab, os, numpy, getpass, wx
+# import sys
+import multiprocess as mp
+###########################MAIN#######################################
+###########################   Change for different system#######################################
+
+parameter={}
+k_fit = np.linspace(2,15,500)
+R1= 2.47
+R2 = 3
 
 ###########################MAIN#######################################
 
-print('\n#########################################################')
-print('#\tChoose Chi file to be processed:\t\t#')
-
-path1 = ('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_bulk_Aug18_athena_1sh.chiq')
-print('#\t   path:  ',path1,'                          \t#')
-print('#########################################################\n')
-print('#\t      K               XAFS  \t#')
-print('#########################################################\n')
-data1 = genfromtxt(path1)[:,(0,1)]
-# print(data1)
+###########################MAIN#######################################
 
 
-print('\n#########################################################')
-print('#\tChoose Chi file to be processed:\t\t#')
-
-path2 = ('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_bulk_Aug18_athena_2sh.chiq')
-print('#\t   path:  ',path2,'                          \t#')
-print('#########################################################\n')
-print('#\t      K               XAFS  \t#')
-print('#########################################################\n')
-data2 = genfromtxt(path2)[:,(0,1)]
-# print(data2)
-# e = float(input('Define E0 in this analysis E0 = '))
-# R = float(input('Define R in this analysis R = '))
-# N = float(input('Define N in this analysis N = '))
-
-path3 = ('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdO_ref_1sh.chiq')
-print('#\t   path CdO:  ',path3,'                          \t#')
-print('#########################################################\n')
-print('#\t      K               XAFS  \t#')
-print('#########################################################\n')
-data3 = genfromtxt(path3)[:,(0,1)]
-# print(data3)
-
-e = 0
-R1 = 2.5118
-N1 = 4
-N2 = 12
-R2 =4.1016
-N3 = 6
-R3 = 2.3475
+def interpolation(f, x):
+    g = interp1d(f[:, 0], f[:, 1])
+    return g(x.tolist())
 
 
-k1 = np.sqrt(data1[:,0]**2+0.2625*e)
-chi1 = data1[:,1]
-k_min = (np.abs(k1 - 2)).argmin()
-k_max = (np.abs(k1 - 16)).argmin()
-k_fit = k1[k_min:k_max]
 
-
-k2 = np.sqrt(data2[:,0]**2+0.2625*e)
-chi2 = data2[:,1]
-chi1_fit = interpolation(np.vstack((k1,chi1)).transpose(),k_fit)/k_fit**2
-chi2_fit = interpolation(np.vstack((k2,chi2)).transpose(),k_fit)/k_fit**2
-k3 = np.sqrt(data3[:,0]**2+0.2625*e)
-chi3 = data3[:,1]
-# print(k3,k_fit)
-chi3_fit = interpolation(np.vstack((k3,chi3)).transpose(),k_fit)/k_fit**2
-
-####################################################################
+###############################################################
+##
+#
+#  Calculate Feff and phase from experimental data
 #
 #
-#  Experiment data to be fitted
+###################################################################
+
+def extract_amp_phase_lambda(exp_base_path,lambda_path,result_path,N=1,R=1,path_name='unnamed'):
+    k_temp = np.linspace(2, 17, 60000)
+    FEFF = np.genfromtxt(lambda_path)
+    lambda1 = FEFF[:, (0, 5)]
+    lambda1 = interpolation(lambda1, k_fit)
+    path_chi = np.genfromtxt(exp_base_path)[:,(0,1)]
+    # k_new = np.sqrt(k_temp ** 2 + 0.2625 * 13.8)
+    path_chi = interpolation(path_chi,k_temp)/k_temp**2
+    # Find peaks for amp
+    # peak_index = find_peaks(abs(path_chi), prominence=0.01, distance=10)[0]
+    # k_peak = k_temp[peak_index]
+    # chi_peak = path_chi[peak_index]
+    # spline_knot = int(len(k_peak) / 5)
+    # t = [k_peak[spline_knot], k_peak[spline_knot * 2], k_peak[spline_knot * 3], k_peak[spline_knot * 4]]
+    # spl = LSQUnivariateSpline(k_peak, chi_peak,t)
+    # amp = spl(k_fit)
+    #
+    amp = np.abs(hilbert(path_chi))
+    amp = np.vstack((k_temp,amp)).transpose()
+    amp = interpolation(amp,k_fit)
+    phase = np.unwrap(np.angle(hilbert(path_chi)))+np.pi/2 - 2*k_temp*R
+    phase = np.vstack((k_temp, phase)).transpose()
+    phase = interpolation(phase,k_fit)
+    Feff = amp/np.exp(-2*R/lambda1)/N*k_fit*R**2
+
+
+
+    plt.figure()
+    plt.subplot(2,1,1)
+    plt.plot(FEFF[:,0],FEFF[:,2],label='FEFF calculated Feff')
+    plt.plot(k_fit,Feff,label='experiment Feff  including MSRD')
+    plt.title('foundamental experiement Feff extraction')
+    plt.legend()
+
+    plt.subplot(2, 1, 2)
+    plt.plot(FEFF[:, 0], FEFF[:, 1]+FEFF[:, 3], label='FEFF calculated phase')
+    plt.plot(k_fit, phase, label='experiment phase')
+    plt.title('foundamental experiement phase extraction')
+    plt.legend()
+    plt.savefig(result_path+'extracted_{:s}.pdf'.format(path_name),
+                format='pdf')
+    plt.close()
+    data = np.vstack((k_fit,Feff,phase)).transpose()
+    np.savetxt(result_path+'extracted_{:s}.dat'.format(path_name),data,
+               header='k, Feff including MSRD, phase')
+    return Feff,phase,lambda1
+
+
+###############################################################
+##
+#
+#  spepcify the FEFF and result path and shell
 #
 #
+###################################################################
+def FEFF_exp(f):
+    global result_path, FEFF,shell
+    FEFF, result_path, shell = f()
+
+###############################################################
+##
 #
-##>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-def fitted_exp(experiment):
+#  General case for model function
+#  devide shell besed on different sample
+#
+###################################################################
+def model_shell(x,N,R,del_ss):
+    if R < R1            :
+        path = 1
+    elif R >=R2:
+        path = 3
+    elif R >=R1 and R <R2:
+        path = 2
+    return N * x ** 2 \
+           * np.abs( FEFF['Feff'+str(path)]) / (x * R ** 2) \
+           * np.sin(2 * x * R +  FEFF['phase'+str(path)]) \
+           * np.exp(-2 * R /  FEFF['lambda'+str(path)]) \
+           * np.exp(-2 * del_ss * x ** 2)
+
+
+###############################################################
+##
+#
+#  Define fitted experiment
+#
+#
+###################################################################
+
+def Ge_experiment(file):
+    data = np.genfromtxt(file)[:,(0,1,2)]
+    global k,chi
+    k = data[1:,0]
+    chi = data[1:,1]/k**3
+
+def CdS_experiment(experiment):
     if experiment == 'pyspline_M311':
-        path = '/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_M311_Aug18_pyspline.dat'
-        data = np.genfromtxt(path)[:,(0,1)]
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M311_Aug18_pyspline.dat'
+        data = np.genfromtxt(path)[:,(2,-1)]
         exp = data[:,(0,1)]
     elif experiment == 'pyspline_M322':
-        path = '/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_M322_Aug18_pyspline.dat'
-        data = np.genfromtxt(path)[:,(0,1)]
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M322_Aug18_pyspline.dat'
+        data = np.genfromtxt(path)[:,(2,-1)]
         exp = data[:,(0,1)]
     elif experiment == 'pyspline_bulk':
-        path = '/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_bulk_Aug18_pyspline.dat'
-        data = np.genfromtxt(path)[:,(0,1)]
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_bulk_Aug18_pyspline.dat'
+        data = np.genfromtxt(path)[:,(2,-1)]
         exp = data[:,(0,1)]
     elif experiment == 'athena_R':
-        path = '/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_R_Nov17.chik'
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_R_Nov17.chik'
         data = np.genfromtxt(path)[:,(0,1)]
         exp = data[:,(0,1)]
+    elif experiment == 'athena_R_12sh':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_R_Nov17.chiq'
+        data = np.genfromtxt(path)[:,(0,1)]
+        data[1:, 1] = data[1:, 1] / data[1:, 0] ** 2
+        exp = data[:,(0,1)]
     elif experiment == 'athena_bulk_12sh':
-        path = '/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_bulk_Aug18_athena_12sh.chiq'
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_bulk_Aug18_athena_12sh.chiq'
         data = np.genfromtxt(path)[:,(0,1)]
         data[1:,1]=data[1:,1]/data[1:,0]**2
         exp = data[:,(0,1)]
     elif experiment == 'athena_M311':
-        path = '/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_XAFS_CdK_chi_2018.txt'
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_XAFS_CdK_chi_2018.txt'
         data = np.genfromtxt(path)[:,(0,2,3,4)]
         exp = data[:,(0,1)]
+    elif experiment == 'athena_M311_12sh':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M311_2018.chiq'
+        data = np.genfromtxt(path)[:,(0,1)]
+        data[1:,1]=data[1:,1]/data[1:,0]**2
+        exp = data[:,(0,1)]
     elif experiment == 'athena_bulk':
-        path = '/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_XAFS_CdK_chi_2018.txt'
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_XAFS_CdK_chi_2018.txt'
         data = np.genfromtxt(path)[:,(0,2,3,4)]
         exp = data[:,(0,2)]
+    elif experiment == 'athena_bulk_ref':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_ref.chik'
+        data = np.genfromtxt(path)[:,(0,1)]
+        exp = data[:,(0,1)]
     elif experiment == 'athena_M322':
-        path = '/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/CdS_XAFS_CdK_chi_2018.txt'
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_XAFS_CdK_chi_2018.txt'
         data = np.genfromtxt(path)[:,(0,2,3,4)]
         exp = data[:,(0,3)]
-    chi_fit = interpolation(exp,k_fit)
+    elif experiment == 'athena_M322_12sh':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M322_2018.chiq'
+        data = np.genfromtxt(path)[:,(0,1)]
+        data[1:,1]=data[1:,1]/data[1:,0]**2
+        exp = data[:,(0,1)]
 
-    # plt.figure()
-    # plt.plot(k_fit,chi1_fit,label='Cd-S shell')
-    # plt.plot(k_fit,chi2_fit,label='Cd-Cd shell')
-    # plt.plot(k_fit,chi3_fit,label='Cd-O shell')
-    # plt.plot(k_fit,chi_fit,label= experiment)
-    # plt.legend()
-    # plt.savefig('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/CdS/chi_shell.pdf',format='pdf')
-    # plt.show()
-    return chi_fit
-
-##<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-#
-#
-#  Finish  Experiment data to be fitted
-#
-#
-####################################################################
-
-####################################################################
-#
-#
-#  Find lambda for the file
-#
-#
-#
-##>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-lambda1 = genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/CdS/FEFF/EXAFS/Cd/F-43m/feff0001.dat')[:,(0,5)]
-lambda1 = interpolation(lambda1,k_fit)
-Feff_CdS = genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/CdS/FEFF/EXAFS/Cd/F-43m/feff0001.dat')[:,(0,2)]
-Feff_CdS = interpolation(Feff_CdS,k_fit)
-
-lambda2 = genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/CdS/FEFF/EXAFS/Cd/F-43m/feff0002.dat')[:,(0,5)]
-lambda2 = interpolation(lambda2,k_fit)
-Feff_CdCd = genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/CdS/FEFF/EXAFS/Cd/F-43m/feff0002.dat')[:,(0,2)]
-Feff_CdCd = interpolation(Feff_CdCd,k_fit)
-
-lambda3 = genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/CdS/FEFF/EXAFS/CdO/feff0001.dat')[:,(0,5)]
-lambda3 = interpolation(lambda3,k_fit)
-Feff_CdO = genfromtxt('//Users/Sophia/ownCloud/PhD/Simulation/CdS/FEFF/EXAFS/CdO/feff0001.dat')[:,(0,2)]
-Feff_CdO = interpolation(Feff_CdO,k_fit)
-##<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-#
-#
-#  Finish find lambda for the file
-#
-#
-####################################################################
-
-
-def extract_CdS():
-
-
-
-
-
-    amp = np.abs(hilbert(chi1_fit))
-    phase = np.unwrap(np.angle(hilbert(chi1_fit)))+np.pi/2 - 2*k_fit*R1
-    Feff_ss_CdS = amp/np.exp(-2*R1/lambda1)/N1*k_fit*R1**2
-
-
-
-
-    plt.figure()
-    plt.plot(k_fit,Feff_ss_CdS,label='experiment CdS')
-    plt.plot(k_fit,Feff_CdS,label='FEFF calculation')
-    plt.legend()
-    plt.show()
-
-
-    return Feff_ss_CdS,phase
-
-
-def extract_CdO():
-
-
-
-
-
-    amp = np.abs(hilbert(chi3_fit))
-    phase = np.unwrap(np.angle(hilbert(chi3_fit)))+np.pi/2 - 2*k_fit*R3
-    Feff_ss_CdO = amp/np.exp(-2*R3/lambda3)/N3*k_fit*R3**2
-
-
-
-    plt.figure()
-    plt.plot(k_fit,Feff_ss_CdO,label='experiment CdO')
-    plt.plot(k_fit,Feff_CdO,label='FEFF calculation')
-    plt.legend()
-    plt.show()
-
-
-    return Feff_ss_CdO,phase
-
-
-def extract_CdCd():
-    amp = np.abs(hilbert(chi2_fit))
-    phase = np.unwrap(np.angle(hilbert(chi2_fit)))+np.pi/2 - 2*k_fit*R2
-    Feff_ss_CdCd = amp/np.exp(-2*R2/lambda2)/N2*k_fit*R2**2
-
-    plt.figure()
-    plt.plot(k_fit,Feff_ss_CdCd,label='experiment CdCd')
-    plt.plot(k_fit,Feff_CdCd,label='FEFF calculation')
-    plt.legend()
-    plt.show()
-
-    return Feff_ss_CdCd,phase
-
-
-
-def fit_exp(chi_fit,seed):
-
-    def model_shell(x,N,R,del_ss):
-        if R > 3            :
-            shell = 2
-        elif R < 2.47:
-            shell = 3
-        else:
-            shell = 1
-        return N * x ** 2 \
-               * np.abs( eval('Feff_ss'+str(shell))) / (x * R ** 2) \
-               * np.sin(2 * x * R +  eval('phase'+str(shell))) \
-               * np.exp(-2 * R /  eval('lambda'+str(shell))) \
-               * np.exp(-2 * del_ss * x ** 2)
-
-    bounds_dic = {'CdS': np.array([(0, 6), (2.47, 2.55), (-0.00001, 0.01)]),
-                  'CdO': np.array([(0, 8), (2.2, 2.4699), (0.0001, 0.03)]),
-                  'CdCd': np.array([(0,12), (3.5, 4.2), (-0.001, 0.03)]),
-                  'Ge3': np.array([(11.999,12), (4.68, 4.70), (0.002, 0.05)]),
-                  'R' : np.array([(2.449, 2.451)]),
-                  'e': np.array([(0,20)]),
-                  'S0': np.array([(0.6,1)]),
-                  'a':np.array([(-2,2)]),
-                  'b':np.array([(-20,20)])}
-    # bounds = np.vstack((bounds_dic['Ge'+str(shell)], bounds_dic['S0'], bounds_dic['e']))
-    bounds = np.vstack((bounds_dic['CdO'],bounds_dic['CdS'],bounds_dic['CdCd'], bounds_dic['S0']))
-
-    def LLE_model(params):
-        S0 = params[-1]
-        # print('ss',params[-3])
-        # print('k',k)
-        # print('k_new',k_new)
-        y = chi_fit/S0
-        model_LLE = model_shell(k_fit, *params[:3]) + model_shell(k_fit, *params[3:6]) + model_shell(k_fit, *params[6:9])
-        LL = -np.sum(stats.norm.logpdf(y * k_fit**2, loc=model_LLE))
-        return LL
-
-
-    LLE_fitresult = differential_evolution(LLE_model,bounds=bounds,strategy='currenttobest1bin',maxiter=100000,seed = seed)
-    # LLE_fitresult = shgo(LLE_model,bounds=bounds)
-
-    S0,del_ss1,del_ss2=LLE_fitresult.x[-1],LLE_fitresult.x[2],LLE_fitresult.x[-2]
-    # print(S0,del_ss1,del_ss2)
-    params = LLE_fitresult.x
-    # print('N1    R1   SS1    N2   R2   SS2   S0')
-    print(params)
-
-    model_LLE = model_shell(k_fit, *params[:3]) + model_shell(k_fit, *params[3:6]) + model_shell(k_fit, *params[6:9])
-    LL = LLE_model(params)
-
-    return model_LLE,LL,params[:-1]
-
-# choose from pyspline_M311,pyspline_M322,pyspline_bulk,athena_R,athena_bulk_12sh,athena_M311,athena_bulk,athena_M322
-parameter ={}
-
-def gen_fit_result(experiment,seed):
-    parameter[experiment+'_chi_fit'] = fitted_exp(experiment)
-    parameter[experiment+'_model_LLE'],parameter[experiment+'_LL'],parameter[experiment+'_params'] = fit_exp(parameter[experiment+'_chi_fit'],seed)
-
-def plot_fit(experiment):
-    plt.plot(k_fit,parameter[experiment+'_chi_fit']*k_fit**2,'.',markersize = 0.5,label=experiment)
-    plt.plot(k_fit,parameter[experiment+'_model_LLE'],linewidth = 0.5,label=experiment+'_fit')
-    plt.plot(k_fit,parameter[experiment+'_model_LLE']-parameter[experiment+'_chi_fit']*k_fit**2,linewidth = 0.5,label=experiment+'_difference')
-
-Feff_ss1,phase1 = extract_CdS()
-Feff_ss2,phase2 = extract_CdCd()
-Feff_ss3,phase3 = extract_CdO()
-
-
-def loop_min_LL(experiment,loop_num):
-    gen_fit_result(experiment,seed = None)
-    prev_chi_fit = parameter[experiment+'_chi_fit']
-    prev_model_LLE = parameter[experiment+'_model_LLE']
-    prev_LL = parameter[experiment+'_LL']
-    prev_params = parameter[experiment+'_params']
-
-    for i in range(loop_num):
-        gen_fit_result(experiment,seed = i)
-        if parameter[experiment+'_LL'] < prev_LL:
-            print('keep current run, LL = ',parameter[experiment+'_LL'], 'previous_LL = ',prev_LL)
-            prev_chi_fit = parameter[experiment+'_chi_fit']
-            prev_model_LLE = parameter[experiment+'_model_LLE']
-            prev_LL = parameter[experiment+'_LL']
-            prev_params = parameter[experiment+'_params']
-
-        else:
-            print('keep previous run, LL = ',prev_LL)
-            continue
-    parameter[experiment+'_chi_fit'] = prev_chi_fit
-    parameter[experiment+'_model_LLE'] = prev_model_LLE
-    parameter[experiment+'_LL'] = prev_LL
-    prev_params = parameter[experiment+'_params']
+    global k,chi
+    k = exp[:,0]
+    chi = exp[:,1]
     return
 
 
-# gen_fit_result('athena_bulk_12sh')
-# gen_fit_result('athena_R')
-# gen_fit_result('athena_bulk')
-# gen_fit_result('athena_M311')
-# gen_fit_result('athena_M322')
+###############################################################
+##
+#
+#  Define bounds for fit
+#
+#
+###################################################################
+bounds_dic = {'CdS': np.array([(0, 6), (R1, R2-0.0001), (-0.00001, 0.01)]),
+              'CdO': np.array([(0, 12), (2.2, R1-0.0001), (0.0001, 0.05)]),
+              'CdCd': np.array([(0, 15), (R2, 4.5), (-0.001, 0.03)]),
+              'Ge1': np.array([(1, 6), (1, R1-0.0001), (0, 0.05)]),
+              'Ge2': np.array([(1, 15), (R1, R2-0.0001), (0, 0.1)]),
+              'Ge3': np.array([(1, 15), (R2, 5), (0, 0.1)]),
+              'e': np.array([(-20, 10)]),
+              'S0': np.array([(0.6, 1)])}
 
-experiment = 'athena_M322'
-loop_min_LL(experiment,200)
+def Ge_bounds():
+    global bounds
+    bounds = np.vstack((bounds_dic['Ge1'],bounds_dic['e']))
+    return
 
-plt.figure()
-# plot_fit('athena_bulk_12sh')
-# plot_fit('athena_R')
-# plot_fit('athena_bulk')
-plot_fit(experiment)
-# plot_fit('athena_M322')
-plt.legend(loc='lower right')
-plt.xlabel('k ($\AA^{-1}$)')
-plt.ylabel('$k^2\chi$')
-print(*parameter[experiment+'_params'][:3])
-plt.text(10,0.3,'LL = '+ str(parameter[experiment+'_LL'])+'\n'
-         + '            N        R      del_ss\n'
-         + 'Cd-O   {:.2f}  {:.2f}  {:.5f}\n'.format(*parameter[experiment+'_params'][:3])
-         + 'Cd-S   {:.2f}  {:.2f}  {:.5f}\n'.format(*parameter[experiment+'_params'][3:6])
-         + 'Cd-Cd {:.2f}  {:.2f}  {:.5f}\n'.format(*parameter[experiment+'_params'][6:9]))
-plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/fit_'+experiment[-4:]+'_(extracted_feature).pdf',format='pdf')
-plt.show()
+def CdOS_bounds():
+    global bounds
+    bounds = np.vstack((bounds_dic['CdO'],bounds_dic['CdS'],bounds_dic['e']))
+    return
+
+###############################################################
+##
+#
+#  spepcify the FEFF calculation
+#
+#
+###################################################################
+def Ge_extract():
+    FEFF_path1 = '/Users/sophia/ownCloud/PhD/Simulation/Ge/feff0001.dat'
+    FEFF_path2 = '/Users/sophia/ownCloud/PhD/Simulation/Ge/feff0002.dat'
+    FEFF_path3 = '/Users/sophia/ownCloud/PhD/Simulation/Ge/feff0003.dat'
+    exp_path1 = '/Users/sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi1.chiq'
+    exp_path2 = '/Users/sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi2.chiq'
+    exp_path3 = '/Users/sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi3.chiq'
+    result_path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/Ge/result/'
+
+
+    shell_num = 1
+
+
+    Ge_FEFF = {}
+    Ge_FEFF['Feff1'], Ge_FEFF['phase1'], Ge_FEFF['lambda1'] = \
+        extract_amp_phase_lambda(exp_path1,FEFF_path1, result_path, N=4,R=2.45,path_name='Ge-Ge1')
+    Ge_FEFF['Feff2'], Ge_FEFF['phase2'], Ge_FEFF['lambda2'] = \
+        extract_amp_phase_lambda(exp_path2, FEFF_path2, result_path, N=12, R=4, path_name='Ge-Ge2')
+    Ge_FEFF['Feff3'], Ge_FEFF['phase3'], Ge_FEFF['lambda3'] = \
+        extract_amp_phase_lambda(exp_path3, FEFF_path3, result_path, N=12, R=4.69, path_name='Ge-Ge3')
+    return Ge_FEFF,result_path,shell_num
+
+
+def CdSO_extract_cluster():
+    FEFF_path2 = '/data/home/apw399/EXAFS_analysis/source/feff_CdS.dat'
+    FEFF_path3 = '/data/home/apw399/EXAFS_analysis/source/feff_CdCd.dat'
+    FEFF_path1 = '/data/home/apw399/EXAFS_analysis/source/feff_CdO.dat'
+    exp_path2 = '/data/home/apw399/EXAFS_analysis/source/CdS_bulk_Aug18_athena_1sh.chiq'
+    exp_path3 = '/data/home/apw399/EXAFS_analysis/source/CdS_bulk_Aug18_athena_2sh.chiq'
+    exp_path1 = '/data/home/apw399/EXAFS_analysis/source/CdO_ref_1sh.chiq'
+    result_path = '/data/home/apw399/EXAFS_analysis/result/CdO_CdS/'
+
+    shell_num = 2
+    CdSO_FEFF = {}
+    CdSO_FEFF['Feff2'], CdSO_FEFF['phase2'], CdSO_FEFF['lambda2'] = \
+        extract_amp_phase_lambda(exp_path2,FEFF_path2, result_path, N=4,R=2.5118,path_name='Cd-S')
+    CdSO_FEFF['Feff3'], CdSO_FEFF['phase3'], CdSO_FEFF['lambda3'] = \
+        extract_amp_phase_lambda(exp_path3, FEFF_path3, result_path, N=12, R=4.1016, path_name='Cd-Cd')
+    CdSO_FEFF['Feff1'], CdSO_FEFF['phase1'], CdSO_FEFF['lambda1'] = \
+        extract_amp_phase_lambda(exp_path1, FEFF_path1, result_path, N=6, R=2.3475, path_name='Cd-O')
+    return CdSO_FEFF,result_path,shell_num
+
+
+
+###############################################################
+##
+#
+#  Define fit model, used in fit()
+#
+#
+###################################################################
+def LLE_model(params):
+    e = params[-1]
+    k_new = np.sqrt(k_fit ** 2 - 0.2625 * e)
+    data = np.vstack((k,chi)).transpose()
+    chi_fit = interpolation(data,k_new)
+    model_LLE = 0
+    for i in range(shell):
+        model_LLE += model_shell(k_fit, *params[(i * 3):(i * 3 + 3)])
+
+    LL = -np.sum(stats.norm.logpdf(chi_fit * k_fit ** 2, loc=model_LLE))
+    return LL
+
+
+
+###############################################################
+##
+#
+#  fit
+#
+#
+###################################################################
+
+def fit(seed):
+    if seed % 2 != 0:
+        LLE_fitresult = differential_evolution(LLE_model, bounds=bounds, strategy='currenttobest1bin', maxiter=1000,
+                                               seed=seed)
+    else:
+        LLE_fitresult = differential_evolution(LLE_model, bounds=bounds, strategy='best1bin', maxiter=100000, seed=seed)
+
+    params = LLE_fitresult.x
+    model_LLE = 0
+    for i in range(shell):
+        model_LLE += model_shell(k_fit, *params[i*3:i*3+3])
+    LL = LLE_model(params)
+    e = params[-1]
+    k_new = np.sqrt(k_fit ** 2 - 0.2625 * e)
+    data = np.vstack((k, chi)).transpose()
+    chi_fit = interpolation(data, k_new)
+    params = np.append(params,LL)
+    return chi_fit, model_LLE, params
+
+
+###############################################################
+##
+#
+#  put fit result in a dictionary
+#  1. i is looped sequence
+#  2. experiment is the file name which will be recorded
+#
+###################################################################
+def gen_fit_result(experiment,i,seed=0):
+    parameter[experiment + '_chi_fit' + str(i)],parameter[experiment+'_model_LLE'+str(i)], \
+    parameter[experiment+'_params'+str(i)]  = fit(seed)
+
+###############################################################
+##
+#
+#  1. run fit in a looped times
+#  2. store all results
+#  3. find best fit
+#
+###################################################################
+
+def loop_min_LL(experiment,loop_num):
+    gen_fit_result(experiment, 0)
+    parameter[experiment] = np.vstack((np.reshape(parameter[experiment + '_chi_fit' + str(0)], (-1, 1)),
+                                       np.reshape(parameter[experiment + '_model_LLE' + str(0)], (-1, 1)),
+                                       np.reshape(parameter[experiment + '_params' + str(0)], (-1, 1))))
+    parameter[experiment + '_k'] = k
+    parameter[experiment + '_chi'] = chi
+    global results
+    results = parameter[experiment]
+    #########################
+    #
+    # use parallel computing
+    #
+    #>>>>>>>>>>>>>>>>>>>>>>>>
+    pool = mp.Pool(mp.cpu_count())
+    print(mp.cpu_count())
+
+    def cal_fit(experiment, i):
+        print('################################ loop ', i)
+        gen_fit_result(experiment, i, seed=i + np.random.randint(50))
+        parameter[experiment + str(i)] = np.vstack((np.reshape(parameter[experiment + '_chi_fit' + str(i)], (-1, 1)),
+                                                    np.reshape(parameter[experiment + '_model_LLE' + str(i)], (-1, 1)),
+                                                    np.reshape(parameter[experiment + '_params' + str(i)], (-1, 1))))
+        return parameter[experiment + str(i)]
+
+    def collected_result(result):
+        global results
+        results = np.append(results, result, axis=1)
+
+    for i in range(loop_num):
+        parameter[experiment+str(i)] = pool.apply_async(cal_fit, args=(experiment, i),callback=collected_result)
+
+    pool.close()
+    pool.join()
+    #<<<<<<<<<<<<<<<<<<<<<<
+    #
+    # use parallel computing
+    #
+    #############################
+    parameter[experiment] = results
+    min_LL_index = parameter[experiment][-1,:].argmin()
+
+    parameter[experiment + '_chi_fit'] = parameter[experiment][:len(k_fit),min_LL_index]
+    parameter[experiment + '_model_LLE'] =  parameter[experiment][len(k_fit):len(k_fit)*2,min_LL_index]
+    parameter[experiment + '_LL'] = parameter[experiment][-1,min_LL_index]
+    parameter[experiment + 'e'] = parameter[experiment][-2, min_LL_index]
+    parameter[experiment + '_params_list'] = parameter[experiment][-shell*3-2:,:]
+    parameter[experiment + '_params'] = parameter[experiment][-shell*3-2:-2,min_LL_index]
+
+    np.savetxt(result_path+experiment+'_params_all.dat',parameter[experiment][-shell*3-2:,:].transpose(),header='N R delss e LL')
+
+    return
+
+
+
+###############################################################
+##
+#
+#  find the best fit in all fitted results and plot
+#
+#
+###################################################################
+
+def plot_best_fit(experiment, loop_num=1000):
+    loop_min_LL(experiment, loop_num)
+
+    plt.figure()
+
+    plt.plot(parameter[experiment + '_k'], parameter[experiment + '_chi'] * parameter[experiment + '_k'] ** 2, '.', markersize=0.8,
+             label=experiment)
+    plt.plot(k_fit, parameter[experiment + '_chi_fit'] * k_fit ** 2, linewidth=0.5, label=experiment+'_e_shifted')
+    plt.plot(k_fit, parameter[experiment + '_model_LLE'], linewidth=0.5, label=experiment + '_fit')
+    plt.plot(k_fit, parameter[experiment + '_model_LLE'] - parameter[experiment + '_chi_fit'] * k_fit ** 2,
+             linewidth=0.5, label=experiment + '_difference')
+    data = np.vstack((k_fit, parameter[experiment + '_chi_fit'],
+                      parameter[experiment + '_model_LLE'] / k_fit ** 2,
+                      parameter[experiment + '_model_LLE'] / k_fit ** 2
+                      - parameter[experiment + '_chi_fit'])).transpose()
+    np.savetxt(result_path + experiment + '_fit.dat', data, header='k    chi_fitted with shifted e      fit/chi     difference')
+    plt.legend(loc='lower right')
+    plt.xlabel('k ($\AA^{-1}$)')
+    plt.ylabel('$k^2\chi$')
+    plt.tight_layout()
+    print(parameter[experiment + '_params'])
+    print(shell)
+    params_text = ['shell'+ str(i+1) +'  {:.2f}  {:.3f}  {:.5f} \n'.format(*parameter[experiment + '_params'][3*i:3*i+3])
+                   for i in range(shell) ]
+    params_label = ''
+    for i in range(shell):
+        params_label += params_text[i]
+
+
+    plt.text(0.1, 0, 'LL = ' + str(parameter[experiment + '_LL']) + '\n'
+             + ' e  = '  + str(parameter[experiment + 'e']) + '\n'
+             + '            N        R      del_ss\n'
+             + params_label )
+
+    plt.savefig(result_path + 'fit_' + experiment + '_(extracted_feature).pdf',format='pdf')
+    plt.close()
+    return
+
+###############################################################
+##
+#
+#  statistic distribution of fit result
+#
+#
+###################################################################
+
+def plot_fit_hist(experiment):
+
+    def param_list(i):
+        N = parameter[experiment+'_params_list'][i,:]
+        R = parameter[experiment+'_params_list'][i+1,:]
+        delss = parameter[experiment+'_params_list'][i+2,:]
+        return N,R,delss
+
+    LL = parameter[experiment+'_params_list'][-1,:]
+    weight = (LL - np.max(LL))/(np.min(LL)-np.max(LL))
+    weight = weight/np.sum(weight)
+
+
+    plt.figure(figsize=(15,(shell+1)*2.5))
+    sns.set()
+
+    for i in range(shell):
+        N,R,delss = param_list(i)
+        plt.subplot(shell,3,i*3+1)
+        plt.hist(N,weights=weight,bins=50)
+        plt.xlabel('shell '+str(i+1)+' coordination number')
+        plt.tight_layout()
+
+        plt.subplot(shell,3,i*3+2)
+        plt.hist(R,weights=weight,bins=50)
+        plt.xlabel('shell '+str(i+1)+' bond length ($\AA$)')
+        plt.tight_layout()
+
+        plt.subplot(shell,3,i*3+3)
+        plt.hist(R,weights=weight,bins=50)
+        plt.xlabel('shell '+str(i+1)+' relative Debye-Waller factor compared with bul')
+        plt.tight_layout()
+
+
+    plt.savefig(result_path + 'fit_'+experiment+'_histogram.pdf',format='pdf')
+    plt.close()
+
+    weight = np.ones(np.shape(LL)[0])/np.shape(LL)[0]
+
+
+    plt.figure(figsize=(15,(shell+1)*2.5))
+    sns.set()
+
+    for i in range(shell):
+        N,R,delss = param_list(i)
+        plt.subplot(shell,3,i*3+1)
+        plt.hist(N,weights=weight,bins=50)
+        plt.xlabel('shell '+str(i+1)+' coordination number')
+        plt.tight_layout()
+
+        plt.subplot(shell,3,i*3+2)
+        plt.hist(R,weights=weight,bins=50)
+        plt.xlabel('shell '+str(i+1)+' bond length ($\AA$)')
+        plt.tight_layout()
+
+        plt.subplot(shell,3,i*3+3)
+        plt.hist(R,weights=weight,bins=50)
+        plt.xlabel('shell '+str(i+1)+' relative Debye-Waller factor compared with bul')
+        plt.tight_layout()
+
+    plt.savefig(result_path + 'fit_'+experiment[7:]+'_histogram(no_weight).pdf',format='pdf')
+    plt.close()
+    return
+
+#############################################################
+#
+# calculate covariance and correlation matrix here
+#
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+def correlation(experiment):
+    variable = parameter[experiment][-3*shell-2:-2,:]
+    covariance = np.cov(variable)
+    corr,_=stats.spearmanr(variable,axis=1)
+    return corr
+##<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#
+# calculate covariance and correlation matrix here
+#
+# ############################################################
+
+
+
+#############################################################
+#
+# plot correlation
+#
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+def plot_corr(experiment):
+    corr = correlation(experiment)
+    sns.set(style="white")
+    mask = np.zeros_like(corr, dtype=np.bool)
+    mask[np.triu_indices_from(mask)] = True
+    f, ax = plt.subplots(figsize=(11, 9))
+    cmap = sns.diverging_palette(220,10, as_cmap=True)
+    label = []
+    for i in range(shell):
+        label.append('shell'+ str(i+1) +'_N')
+        label.append('shell'+ str(i+1) +'_R')
+        label.append('shell'+ str(i+1) +'_delss')
+
+    sns.heatmap(corr, mask=mask, cmap=cmap, vmax=1, annot=True, center=0,
+                square=True, linewidths=.5, cbar_kws={"shrink": .5},
+                xticklabels=label,
+                yticklabels=label)
+    plt.savefig(
+        result_path + '/correlation_' + experiment + '.pdf',
+        format='pdf')
+    plt.close()
+
+
+
+
+############################################################
+#
+# Fit for Gemanium experiment
+#
+############################################################
+# filelist = glob.glob('/Users/sophia/ownCloud/PhD/Experiment_Analysis/Ge/Ge_QDs_HP_Nano_Letters/Ge_HP_Chi-k/*.k3')
+#     FEFF_exp(Ge_extract)
+# for file in filelist:
+#     filename = os.path.basename(file)
+#     Ge_experiment(file)
+#     Ge_bounds()
+#     plot_best_fit(filename[:-3], loop_num=10)
+#     plot_fit_hist(filename[:-3])
+#     plot_corr(filename[:-3])
+#     print(filename)
+
+
+############################################################
+#
+# Fit for CdS experiment
+#
+############################################################
+experiment_list = ['athena_bulk_12sh','athena_bulk','athena_R','athena_M311','athena_M322','athena_R_12sh','athena_M311_12sh','athena_M322_12sh','pyspline_M311','pyspline_M322','pyspline_bulk']
+FEFF_exp(CdSO_extract_cluster)
+CdOS_bounds()
+def parel_plot(experiment,loop_num=10):
+    CdS_experiment(experiment)
+    plot_best_fit(experiment,loop_num=loop_num)
+    plot_fit_hist(experiment)
+    plot_corr(experiment)
+    return
+for i in experiment_list:
+    parel_plot(i,loop_num=4)
+

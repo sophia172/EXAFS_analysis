@@ -8,7 +8,7 @@ from scipy.optimize import curve_fit
 import glob
 from scipy import stats
 from scipy.optimize import *
-from numdifftools import Jacobian
+# from numdifftools import Jacobian
 from math import sqrt,pi,pow
 from numpy import *
 from scipy.constants import *
@@ -16,7 +16,7 @@ from scipy.signal import *
 from numpy import linalg
 #from scipy import *
 from numpy import fft
-from time import time
+# from time import time
 import numpy
 
 from xafs.FT import *
@@ -24,9 +24,12 @@ from xafs.def_sample import *
 from xafs.FEFF_cal import *
 from xafs.ratio_fit import *
 from xafs.artemis_FITplot import *
+import os
 
-import pylab, os, numpy, getpass, wx
-import sys
-
+# import pylab, os, numpy, getpass, wx
+# import sys
+import multiprocess as mp
+import seaborn as sns
+import tensorflow as tf
 
 

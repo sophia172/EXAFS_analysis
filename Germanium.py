@@ -1,856 +1,583 @@
+
 import numpy as np
-from scipy.interpolate import interp1d
-from xafs import *
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d,UnivariateSpline,LSQUnivariateSpline
 from scipy.optimize import curve_fit
+import glob
+from scipy import stats
+from scipy.optimize import *
+# from numdifftools import Jacobian
+from math import sqrt,pi,pow
+from numpy import *
+from scipy.constants import *
 from scipy.signal import *
+from numpy import linalg
+import seaborn as sns
+from scipy.stats import norm
+
+
+# import pylab, os, numpy, getpass, wx
+# import sys
+import multiprocess as mp
 
 def interpolation(f, x):
     g = interp1d(f[:, 0], f[:, 1])
     return g(x.tolist())
 
 
-################################################
-#
-##
-#  Test if Ge each peak adds up together
-#
-#
-####################################################
-
-chiq1 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi1.chiq')
-chiq2 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi2.chiq')
-chiq3 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi3.chiq')
-#
-# plt.figure()
-# plt.plot(k,exp*k**2)
-# plt.plot(chiq1[:,0],chiq1[:,1]+chiq2[:,1]+chiq3[:,1])
-# plt.xlim([0,20])
-# plt.show()
-
-experiments = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi.dat',skip_header=5)
-k = experiments[:,0]
-weight=2
-
-k_min = (np.abs(k - 3)).argmin()
-k_max = (np.abs(k - 18)).argmin()
-k_fit = np.linspace(k[k_min],k[k_max],400)
-
-# exp = exp[k_min:k_max]
-
-FEFF_1 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/feff0001.dat',
-                         skip_header=15)
-FEFF_2 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/feff0002.dat',
-                       skip_header=15)
-FEFF_3 = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/feff0005.dat',
-                       skip_header=15)
-
-# data_excurve = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_pot_pha.dat',skip_header=5)
-# Feff1=data_excurve[:,(0,1)]
-# Feff2=Feff1
-# Feff3=Feff1
-#
-# phase1=data_excurve[:,(0,2)]
-# phase1[:,1] += data_excurve[:,3]
-# phase2=phase1
-# phase3 = phase1
 
 
-
-Feff1 = FEFF_1[:, (0, 2)]
-Feff2 = FEFF_2[:, (0, 2)]
-Feff3 = FEFF_3[:, (0, 2)]
-
-
-
-phase1 = FEFF_1[:, (0, 1)]
-         #+0.9
-phase1[:, 1] += FEFF_1[:, 3]
-
-phase2 = FEFF_2[:, (0, 1)]
-         #+1.468
-phase2[:, 1] += FEFF_2[:, 3]
-
-phase3 = FEFF_3[:, (0, 1)]
-         #+1.727
-phase3[:, 1] += FEFF_3[:, 3]
-
-
-lambda1 = FEFF_1[:, (0, 5)]
-lambda2 = FEFF_2[:, (0, 5)]
-lambda3 = FEFF_3[:, (0, 5)]
-
-Feff1 =  interpolation(Feff1,  k_fit)
-Feff2 =  interpolation(Feff2,  k_fit)
-Feff3 =  interpolation(Feff3,  k_fit)
-lambda1 =  interpolation(lambda1,  k_fit)
-lambda2 =  interpolation(lambda2,  k_fit)
-lambda3 =  interpolation(lambda3,  k_fit)
-phase1 =  interpolation(phase1,  k_fit)
-phase2 =  interpolation(phase2,  k_fit)
-phase3 =  interpolation(phase3,  k_fit)
-e = 13.8
-ss = 0.0054
+parameter={}
+k_fit = np.linspace(3.5,9,300)
+R1= 2.47
+R2 = 3
 ###############################################################
 ##
 #
-#  Calculate phase from experimental data
+#  Calculate Feff and phase from experimental data
 #
-#  1. Use e0 alligned Chi result
-#  2. Withdraw knot position and calculate phase
 #
 ###################################################################
-def calc_phase(shell):
-    data = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi.xmu')
-    data1 = data[:,1]
-    data2 = data[:,2]
-    data3 = data[:,3]
-    k_fine = np.linspace(2.5,18,51201)
-    # interpolate each file with k_fine
-    k = np.sqrt((data[:,0]+e)/3.81)
-    chi1= data1
-    exp = np.vstack((k,chi1)).transpose()
-    chi1 = interpolation(exp,k_fine)
-    chi1_fit = interpolation(exp,k_fit)
 
-
-    chi2= data2
-    exp = np.vstack((k,chi2)).transpose()
-    chi2 = interpolation(exp,k_fine)
-    chi2_fit = interpolation(exp,k_fit)
-
-    chi3= data3
-    exp = np.vstack((k,chi3)).transpose()
-    chi3 = interpolation(exp,k_fine)
-    chi3_fit = interpolation(exp,k_fit)
-
-
-    if shell == 1:
-        chi = chi1
-        chi_fit = chi1_fit
-        R = 2.45
-    elif shell == 2:
-        chi = chi2-chi1
-        chi_fit = chi2_fit-chi1_fit
-        R = 4.0
-    elif shell == 3:
-        chi = chi3-chi2
-        chi_fit = chi2_fit-chi1_fit
-        R = 4.69
-    correction = 0
+def extract_amp_phase_lambda(exp_base_path,lambda_path,result_path,N=1,R=1,path_name='unnamed'):
+    k_temp = np.linspace(2, 17, 60000)
+    FEFF = np.genfromtxt(lambda_path)
+    lambda1 = FEFF[:, (0, 5)]
+    lambda1 = interpolation(lambda1, k_fit)
+    path_chi = np.genfromtxt(exp_base_path)[:,(0,1)]
+    # k_new = np.sqrt(k_temp ** 2 + 0.2625 * 13.8)
+    path_chi = interpolation(path_chi,k_temp)/k_temp**2
+    # Find peaks for amp
+    # peak_index = find_peaks(abs(path_chi), prominence=0.01, distance=10)[0]
+    # k_peak = k_temp[peak_index]
+    # chi_peak = path_chi[peak_index]
+    # spline_knot = int(len(k_peak) / 5)
+    # t = [k_peak[spline_knot], k_peak[spline_knot * 2], k_peak[spline_knot * 3], k_peak[spline_knot * 4]]
+    # spl = LSQUnivariateSpline(k_peak, chi_peak,t)
+    # amp = spl(k_fit)
+    #
+    amp = np.abs(hilbert(path_chi))
+    amp = np.vstack((k_temp,amp)).transpose()
+    amp = interpolation(amp,k_fit)
+    phase = np.unwrap(np.angle(hilbert(path_chi)))+np.pi/2 - 2*k_temp*R
+    phase = np.vstack((k_temp, phase)).transpose()
+    phase = interpolation(phase,k_fit)
+    Feff = amp/np.exp(-2*R/lambda1)/N*k_fit*R**2
 
 
 
-    peak_index = find_peaks(chi,prominence=0.0001,distance=10)[0]
-    valley_index = find_peaks(-1*chi,prominence=0.0001,distance=10)[0]
-    zero_index = np.where(np.diff(np.sign(chi)))[0]
-
-
-    # Figure out where the curve start
-    index = np.hstack((peak_index,valley_index,zero_index))
-    index = np.sort(index)
-    # print(index)
-    phase_knot = np.array([])
-    phase_peak = np.array([])
-    if index[0] in peak_index:
-        print('curve start with peak',index)
-        for n,i in enumerate(index):
-            phase_knot = np.append(phase_knot, (pi/2 *(n+1)+ correction - 2 * k_fine[i] *R))
-            # print('2kR: ',2 * k_fine[i] *R)
-    elif index[0] in valley_index:
-        print('curve start with valley')
-        for n,i in enumerate(index):
-            phase_knot = np.append(phase_knot, pi/2 *(n+3) - 2 * k_fine[i] *R + correction)
-    elif index[1] in peak_index:
-        print('curve start with 0 then peak')
-        for n,i in enumerate(index):
-            phase_knot = np.append(phase_knot, pi/2 *n - 2 * k_fine[i] *R + correction)
-    elif index[1] in valley_index:
-        print('curve start with 0 then valley')
-        for n,i in enumerate(index):
-            phase_knot = np.append(phase_knot, pi/2 *(n+2) - 2 * k_fine[i] *R + correction)
-    k_knot = k_fine[index]
-    for i in peak_index:
-        # print(np.where(index == i))
-
-        phase_peak = np.append(phase_peak,phase_knot[np.where(index == i)])
-    # print(index)
-    k_peak = k_fine[peak_index]
-    chi_peak = chi[peak_index]
-    k_valley = k_fine[valley_index]
-    chi_valley = chi[valley_index]
-    k_zero = k_fine[zero_index]
-    chi_zero = chi[zero_index]
-
-
-    phase_FEFF = np.vstack((k_fit,eval('phase'+ str(shell)))).transpose()
-    phase_FEFF = interpolation(phase_FEFF,k_knot)
-
-
-
-    spline_knot = int(len(k_knot)/12)
-    t= [k_knot[spline_knot],k_knot[spline_knot*2],k_knot[spline_knot*3],k_knot[spline_knot*4],k_knot[spline_knot*5],k_knot[spline_knot*6],k_knot[spline_knot*7],k_knot[spline_knot*8],k_knot[spline_knot*9],k_knot[spline_knot*10],k_knot[spline_knot*11]]
-    spl = LSQUnivariateSpline(k_knot,phase_knot,t)
-    phase = spl(k_fit)
-
-    # ############################################# show the experiemnt point we used to fit
     plt.figure()
-    plt.plot(k_fine,chi,label='exp')
-    plt.plot(k_peak,chi_peak,'.',label='peak')
-    plt.plot(k_zero,chi_zero,'.',label='zero')
-    plt.plot(k_valley,chi_valley,'.',label='valley')
+    plt.subplot(2,1,1)
+    plt.plot(FEFF[:,0],FEFF[:,2],label='FEFF calculated Feff')
+    plt.plot(k_fit,Feff,label='experiment Feff  including MSRD')
+    plt.title('foundamental experiement Feff extraction')
     plt.legend()
-    plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('find knot point in shell %d'%shell)
-    plt.show()
-    # ###
-    # #       Plot calculated phase compared with FEFF calculated one
-    # ###
-    # ############################################# show the difference between calcuated phase and FEFF phase
-    plt.figure()
-    plt.plot(k_knot,phase_knot,'.')
-    plt.plot(k_fit,phase,label='phase')
-    plt.plot(k_fit,eval('phase'+str(shell)),label='previous calculated phase')
-    plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('calculated phase in shell %d'%shell)
-    plt.legend()
-    plt.show()
 
-    ###
-    #       Plot sin wave with calculated phase
-    ###
-    zero=np.zeros(len(k_fit))
-    plt.figure()
-    plt.plot(k_fit,chi_fit,'.',markersize=0.5)
-    plt.plot(k_fit,np.sin(2*k_fit*R+phase)*np.amax(chi)/2,linewidth = 0.5,label='sin wave with phase')
-    plt.plot(k_fit,np.sin(2*k_fit*R+phase)*np.amax(chi)/2-chi_fit,linewidth = 0.5,label='difference')
-    plt.plot(k_fit,zero,linewidth = 0.5)
-    # plt.xlim([4.75,5.25])
-    plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('phase fit in shell %d'%shell)
+    plt.subplot(2, 1, 2)
+    plt.plot(FEFF[:, 0], FEFF[:, 1]+FEFF[:, 3], label='FEFF calculated phase')
+    plt.plot(k_fit, phase, label='experiment phase')
+    plt.title('foundamental experiement phase extraction')
     plt.legend()
-    plt.show()
-    return phase
+    plt.savefig(result_path+'extracted_{:s}.pdf'.format(path_name),
+                format='pdf')
+    plt.close()
+    data = np.vstack((k_fit,Feff,phase)).transpose()
+    np.savetxt(result_path+'extracted_{:s}.dat'.format(path_name),data,
+               header='k, Feff including MSRD, phase')
+    return Feff,phase,lambda1
 
 ###############################################################
 ##
 #
-#  Calculate Feff from experimental data
+#  spepcify the FEFF calculation
 #
-#  1. Use e0 alligned Chi result
-#  2. Withdraw knot position and calculate phase
 #
 ###################################################################
-def calc_Feff(shell):
-    data = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi.xmu')
-    data1 = data[:,1]
-    data2 = data[:,2]
-    data3 = data[:,3]
-    k_fine = np.linspace(2,18,51201)
-    # interpolate each file with k_fine
-    k = np.sqrt((data[:,0]+e)/3.81)
-    chi1= data1
-    exp = np.vstack((k,chi1)).transpose()
-    chi1_fine = interpolation(exp,k_fine)
+def Ge_extract():
+    FEFF_path1 = '/Users/sophia/ownCloud/PhD/Simulation/Ge/feff0001.dat'
+    FEFF_path2 = '/Users/sophia/ownCloud/PhD/Simulation/Ge/feff0002.dat'
+    FEFF_path3 = '/Users/sophia/ownCloud/PhD/Simulation/Ge/feff0003.dat'
+    exp_path1 = '/Users/sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi1.chiq'
+    exp_path2 = '/Users/sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi2.chiq'
+    exp_path3 = '/Users/sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi3.chiq'
+    result_path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/Ge/result/'
 
 
-    chi2= data2
-    exp = np.vstack((k,chi2)).transpose()
-    chi2_fine = interpolation(exp,k_fine)
+    shell_num = 1
 
-    chi3= data3
-    exp = np.vstack((k,chi3)).transpose()
-    chi3_fine = interpolation(exp,k_fine)
 
-    if shell == 1:
-        chi_fine = chi1_fine
-        chi = chi1
-        R = 2.45
-        N = 4
+    Ge_FEFF = {}
+    Ge_FEFF['Feff1'], Ge_FEFF['phase1'], Ge_FEFF['lambda1'] = \
+        extract_amp_phase_lambda(exp_path1,FEFF_path1, result_path, N=4,R=2.45,path_name='Ge-Ge1')
+    Ge_FEFF['Feff2'], Ge_FEFF['phase2'], Ge_FEFF['lambda2'] = \
+        extract_amp_phase_lambda(exp_path2, FEFF_path2, result_path, N=12, R=4, path_name='Ge-Ge2')
+    Ge_FEFF['Feff3'], Ge_FEFF['phase3'], Ge_FEFF['lambda3'] = \
+        extract_amp_phase_lambda(exp_path3, FEFF_path3, result_path, N=12, R=4.69, path_name='Ge-Ge3')
+    return Ge_FEFF,result_path,shell_num
 
-    elif shell == 2:
-        chi_fine = chi2_fine-chi1_fine
-        chi = chi2-chi1
-        R = 4.0
-        N = 12
 
-    elif shell == 3:
-        chi_fine = chi3_fine-chi2_fine
-        chi = chi3-chi2
-        R = 4.69
-        N = 12
+def CdSO_extract_cluster():
+    FEFF_path2 = '/data/home/apw399/EXAFS_analysis/source/feff_CdS.dat'
+    FEFF_path3 = '/data/home/apw399/EXAFS_analysis/source/feff_CdCd.dat'
+    FEFF_path1 = '/data/home/apw399/EXAFS_analysis/source/feff_CdO.dat'
+    exp_path2 = '/data/home/apw399/EXAFS_analysis/source/CdS_bulk_Aug18_athena_1sh.chiq'
+    exp_path3 = '/data/home/apw399/EXAFS_analysis/source/CdS_bulk_Aug18_athena_2sh.chiq'
+    exp_path1 = '/data/home/apw399/EXAFS_analysis/source/CdO_ref_1sh.chiq'
+    result_path = '/data/home/apw399/EXAFS_analysis/result/CdO_CdS/'
 
-    correction = 2* pi *5
-    # print(k1,k_fit)
-    chi_fit = interpolation(np.vstack((k,chi)).transpose(),k_fit)
-    peak_index = find_peaks(abs(chi_fine),prominence=0.0001,distance=10)[0]
-    k_peak = k_fine[peak_index]
-    chi_peak = chi_fine[peak_index]
-
-    phase_FEFF = np.vstack((k_fit,eval('phase'+ str(shell)))).transpose()
-    phase_FEFF = interpolation(phase_FEFF,k_peak)
-    lambda_FEFF = np.vstack((k_fit,eval('lambda'+ str(shell)))).transpose()
-    lambda_FEFF = interpolation(lambda_FEFF,k_peak)
-    Feff_FEFF = np.vstack((k_fit,eval('Feff'+ str(shell)))).transpose()
-    Feff_FEFF = interpolation(Feff_FEFF,k_peak)
-
-    def EXAFSmodelWOfeff(k_fit,phase,lambdaa):
-        return N * 1 / (k_fit * R ** 2) \
-               * np.sin(2 * k_fit * R +  phase) \
-               * np.exp(-2 * R /  lambdaa) \
-               * np.exp(-2 * ss * k_fit ** 2)
-    # print(shape(k_fit),shape(phase1),shape(lambda1))
-    # print(chi_fit)
-    spline_knot = int(len(k_peak)/7)
-    t= [k_peak[spline_knot],k_peak[spline_knot*2],k_peak[spline_knot*3],k_peak[spline_knot*4],k_peak[spline_knot*5],k_peak[spline_knot*6]]
-    spl = LSQUnivariateSpline(k_peak,chi_peak/EXAFSmodelWOfeff(k_peak,phase_FEFF,lambda_FEFF),t)
-    Feff = spl(k_fit)
-
-    print('Feff:  ',Feff)
+    shell_num = 2
+    CdSO_FEFF = {}
+    CdSO_FEFF['Feff2'], CdSO_FEFF['phase2'], CdSO_FEFF['lambda2'] = \
+        extract_amp_phase_lambda(exp_path2,FEFF_path2, result_path, N=4,R=2.5118,path_name='Cd-S')
+    CdSO_FEFF['Feff3'], CdSO_FEFF['phase3'], CdSO_FEFF['lambda3'] = \
+        extract_amp_phase_lambda(exp_path3, FEFF_path3, result_path, N=12, R=4.1016, path_name='Cd-Cd')
+    CdSO_FEFF['Feff1'], CdSO_FEFF['phase1'], CdSO_FEFF['lambda1'] = \
+        extract_amp_phase_lambda(exp_path1, FEFF_path1, result_path, N=6, R=2.3475, path_name='Cd-O')
+    return CdSO_FEFF,result_path,shell_num
 
 ###############################################################
 ##
 #
-#  Calculate amp
+#  spepcify the FEFF and result path and shell
 #
-#  1. define e0 = 14.4
-#  2. Withdraw knot position and calculate phase
 #
 ###################################################################
-def calc_amp(shell):
-    data = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi.xmu')
-    data1 = data[:,1]
-    data2 = data[:,2]
-    data3 = data[:,3]
-    k_fine = np.linspace(2.5,18,51201)
-    # interpolate each file with k_fine
-    k = np.sqrt((data[:,0]+e)/3.81)
-    chi1= data1
-    exp = np.vstack((k,chi1)).transpose()
-    chi1_fine = interpolation(exp,k_fine)
+def FEFF_exp(f):
+    global result_path, FEFF,shell
+    FEFF, result_path, shell = f()
 
-
-    chi2= data2
-    exp = np.vstack((k,chi2)).transpose()
-    chi2_fine = interpolation(exp,k_fine)
-
-    chi3= data3
-    exp = np.vstack((k,chi3)).transpose()
-    chi3_fine = interpolation(exp,k_fine)
-
-    if shell == 1:
-        chi_fine = chi1_fine
-        chi = chi1
-        R = 2.45
-        N = 4
-
-    elif shell == 2:
-        chi_fine = chi2_fine-chi1_fine
-        chi = chi2-chi1
-        R = 4.0
-        N = 12
-
-    elif shell == 3:
-        chi_fine = chi3_fine-chi2_fine
-        chi = chi3-chi2
-        R = 4.69
-        N = 12
-
-
-    chi_fit = interpolation(np.vstack((k,chi)).transpose(),k_fit)
-    peak_index = find_peaks(abs(chi_fine),prominence=0.0001,distance=10)[0]
-    k_peak = k_fine[peak_index]
-    chi_peak = chi_fine[peak_index]
-
-
-    def EXAFSmodelWOfeff(k_fit,phase):
-        return np.sin(2 * k_fit * R +  phase) \
-
-
-    spline_knot = int(len(k_peak)/8)
-    t= [k_peak[spline_knot],k_peak[spline_knot*2],k_peak[spline_knot*3],k_peak[spline_knot*4],k_peak[spline_knot*5],k_peak[spline_knot*6],k_peak[spline_knot*7]]
-    spl = LSQUnivariateSpline(k_peak,np.abs(chi_peak),t)
-    amp = spl(k_fit)
-    amp1 = np.abs(hilbert(chi_fit))
-    Feff = amp/N/np.exp(-2*ss*k_fit**2)/np.exp(-2*R/eval('lambda'+ str(shell)))*k_fit*R**2
-
-    # print('amp:  ',amp)
-
-
-
-    # ############################################# show the experiemnt point we used to fit
-    plt.figure()
-    plt.plot(k_fine,chi_fine,label='exp')
-    plt.plot(k_peak,chi_peak,'.',label='peak')
-
-    plt.legend()
-    plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('find Feff point in shell %d'%shell)
-    plt.show()
-    #
-    # # # ############################################# show the difference between calcuated Feff and FEFF amp
-    plt.figure()
-    plt.plot(k_fit,chi_fit,'.',label='experiment',markersize=0.8)
-    plt.plot(k_fit,amp,label='calculated amp',linewidth=0.5)
-    plt.plot(k_fit,amp1,label='hilbert amp',linewidth=0.5)
-    plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('amp fit in shell %d'%shell)
-    plt.legend()
-    plt.savefig('/Users/Sophia/Desktop/amp_Ge_shell1.pdf',format='pdf')
-    plt.show()
-    #
-    # # ############################################# show the fit result from calculated amp
-    # plt.figure()
-    # plt.plot(k,chi,'.',label='experiment')
-    # plt.plot(k_fit,EXAFSmodelWOfeff(k_fit,eval('phase'+str(shell)))*amp,label= 'fitted result')
-    # plt.plot(k_fit,EXAFSmodelWOfeff(k_fit,eval('phase'+str(shell)))*amp-chi_fit,linewidth = '0.5',label='difference')
-    # plt.xlabel('k ($\AA^{-1}$)')
-    # plt.title('amp fit in shell %d'%shell)
-    # plt.legend()
-    # plt.show()
-    ############################################# #############################################
-    # # show phase calculated with amp
-    ############################################# #############################################
-    plt.figure()
-    sin_wave = chi_fit/amp
-    arcsin_wave = np.arcsin(sin_wave/np.amax(abs(sin_wave)))
-    phase = arcsin_wave - 2*k_fit*R
-
-    phase1 = np.unwrap(np.angle(hilbert(chi_fit)))+np.pi/2-2*k_fit*R
-
-    plt.plot(k_fit,sin_wave,label='sin wave',linewidth=1)
-    plt.plot(k_fit,arcsin_wave,label='arcsin',linewidth=1)
-    plt.plot(k_fit,phase,label='phase calculated with arcsin',linewidth=1)
-
-    plt.plot(k_fit,phase1,label='phase calculated with Hilbert',linewidth=1)
-    # plt.plot(k_fit,eval('phase'+str(shell)),label='FEFF calculated phase',linewidth=1)
-    plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('phase calculated in shell%d'%shell)
-    plt.legend()
-    plt.savefig('/Users/Sophia/Desktop/sin()_Ge_shell1.pdf',format='pdf')
-    plt.show()
-    ############################################# #############################################
-    #
-    #     show fit result with calculating amp and phase
-    #
-    ############################################# #############################################
-    plt.figure()
-    plt.plot(k_fit,chi_fit * k_fit**2,label='experiment',linewidth=0.5)    # shell1 is 1.0916, shell2 is 1.2143.
-    plt.plot(k_fit,amp*sin(2*k_fit*R+phase)* k_fit**2*1.0916,label='fit',linewidth=0.5)
-    plt.plot(k_fit,amp1*sin(2*k_fit*R + phase1 )* k_fit**2,label='fit_Hilbert',linewidth=0.5)
-    plt.plot(k_fit,amp*sin(2*k_fit*R+phase)* k_fit**2*1.0916-chi_fit* k_fit**2,label='normalfit_difference',linewidth=0.5)
-    plt.plot(k_fit,amp*sin(2*k_fit*R+phase1)* k_fit**2-chi_fit* k_fit**2,label='Hilbertfit_difference',linewidth=0.5)
-    # plt.ylim([-0.01,0.01])
-    plt.legend()
-    plt.savefig('/Users/Sophia/Desktop/fit_Ge_shell1.pdf',format='pdf')
-    plt.show()
-
-    ############################################# #############################################
-    #
-    #     Compare calculated Feff and FEFF calculated Feff
-    #
-    ############################################# #############################################
-    plt.figure()
-    plt.plot(k_fit,Feff,label='experiment calculated $\sigma^2$ = %f'%ss)
-    plt.plot(k_fit,eval('Feff'+ str(shell)),label='FEFF calculated')
-    plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('Feff calculated in shell%d'%shell)
-    plt.legend()
-    plt.savefig('/Users/Sophia/Desktop/Feff_Ge_shell1.pdf',format='pdf')
-    plt.show()
-
-    return amp,phase
-
-# phase2 = calc_phase()
-# phase3 = calc_phase()
 ###############################################################
 ##
 #
-#  Withdraw FEFF, lambda and phase from FEFF output file
+#  General case for model function
+#  devide shell besed on different sample
+#
+###################################################################
+def model_shell(x,N,R,del_ss):
+    if R < R1            :
+        path = 1
+    elif R >=R2:
+        path = 3
+    elif R >=R1 and R <R2:
+        path = 2
+    return N * x ** 2 \
+           * np.abs( FEFF['Feff'+str(path)]) / (x * R ** 2) \
+           * np.sin(2 * x * R +  FEFF['phase'+str(path)]) \
+           * np.exp(-2 * R /  FEFF['lambda'+str(path)]) \
+           * np.exp(-2 * del_ss * x ** 2)
+
+###############################################################
+##
+#
+#  Define bounds for fit
 #
 #
 ###################################################################
-def save_FEFF_calc():
-    Ge_Feff_phase = np.vstack((k_fit,Feff1,lambda1,phase1,Feff2,lambda2,phase2,Feff3,lambda3,phase3)).transpose()
-    np.savetxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/Ge_Feff_phase.dat',Ge_Feff_phase,header='# k_fit,Feff1,lambda1,phase1,Feff2,lambda2,phase2,Feff3,lambda3,phase3')
-    plt.figure(figsize=(8,6))
+bounds_dic = {'CdS': np.array([(0, 6), (R1, R2-0.0001), (-0.00001, 0.01)]),
+              'CdO': np.array([(0, 12), (2.2, R1-0.0001), (0.0001, 0.05)]),
+              'CdCd': np.array([(0, 15), (R2, 4.5), (-0.001, 0.03)]),
+              'Ge1': np.array([(1, 6), (1, R1-0.0001), (0, 0.05)]),
+              'Ge2': np.array([(1, 15), (R1, R2-0.0001), (0, 0.1)]),
+              'Ge3': np.array([(1, 15), (R2, 5), (0, 0.1)]),
+              'e': np.array([(-20, -10)]),
+              'S0': np.array([(0.6, 1)])}
 
-    plt.subplot(3,1,1)
-    plt.plot(k_fit,Feff1,label='Feff1')
-    plt.plot(k_fit,Feff2,label='Feff2')
-    plt.plot(k_fit,Feff3,label='Feff3')
-    plt.xlabel('K $(\AA^{-1})$')
-    plt.legend()
-    plt.tight_layout()
-
-    plt.subplot(3,1,2)
-    plt.plot(k_fit,lambda1,label='lambda1')
-    plt.plot(k_fit,lambda2,label='lambda2')
-    plt.plot(k_fit,lambda3,label='lambda3')
-    plt.xlabel('K $(\AA^{-1})$')
-    plt.legend()
-    plt.tight_layout()
-
-    plt.subplot(3,1,3)
-    plt.plot(k_fit,phase1,label='phase1')
-    plt.plot(k_fit,phase2,label='phase2')
-    plt.plot(k_fit,phase3,label='phase3')
-    plt.xlabel('K $(\AA^{-1})$')
-    plt.legend()
-    plt.tight_layout()
-
-    plt.savefig('/Users/Sophia/ownCloud/PhD/Simulation/Ge/Ge_Feff_phase.pdf',format='pdf')
-
-# save_FEFF_calc()
+def Ge_bounds():
+    global bounds
+    bounds = np.vstack((bounds_dic['Ge1'],bounds_dic['e']))
+    return
+###############################################################
+##
 #
-# plt.plot(k,phase3)
-# plt.show()
-def EXAFS_model(x,N1,R1,ss1,N2,R2,ss2,N3,R3,ss3):
-    print(N1,R1,ss1,N2,R2,ss2,N3,R3,ss3)
-    return N1 * x **weight\
-           * abs( Feff1.astype(float)) / (x.astype(float) * R1 ** 2) \
-           * np.sin(2 * x.astype(float) * R1 +  phase1.astype(float)) \
-           * np.exp(-2 * R1 /  lambda1.astype(float)) \
-           * np.exp(-2 * ss1 * x.astype(float) ** 2) \
-           + N2 * x **weight\
-           * abs( Feff2.astype(float)) / (x.astype(float) * R2 ** 2) \
-           * np.sin(2 * x.astype(float) * R2 +  phase2.astype(float)) \
-           * np.exp(-2 * R2 /  lambda2.astype(float)) \
-           * np.exp(-2 * ss2 * x.astype(float) ** 2)\
-           + N3 * x **weight\
-           * abs( Feff3.astype(float)) / (x.astype(float) * R3 ** 2) \
-           * np.sin(2 * x.astype(float) * R3 +  phase3.astype(float)) \
-           * np.exp(-2 * R3 /  lambda3.astype(float)) \
-           * np.exp(-2 * ss3 * x.astype(float) ** 2)
-#
-# def EXAFS_shell(x,N,R,ss):
-#     return N * x **weight \
-#            * abs( Feff1.astype(float)) / (x.astype(float) * R ** 2) \
-#            * np.sin(2 * x.astype(float) * R +  phase1.astype(float)) \
-#            * np.exp(-2 * R /  lambda1.astype(float)) \
-#            * np.exp(-2 * ss * x.astype(float) ** 2)
-#
-# plt.figure()
-# plt.plot(k,EXAFS_shell(k,3.324,2.447,0.00236),label='path')
-# plt.plot(chiq1[:,0],chiq1[:,1],label='RFT')
-# plt.legend()
-# plt.show()
-
-
-params_dic = {'Ge1': [6, 2.35, 0.00234], 'Ge2': [12, 4, 0.005], 'Ge3': [12, 4.8, 0.006], 'e':[3], 'sd': [1]}
-bounds_dic = {'Ge1': np.array([(3.999, 4), (2.449, 2.451), (0.0053, 0.0055)]),
-              'Ge2': np.array([(11.999,12), (3.99, 4.01), (0.002, 0.05)]),
-              'Ge3': np.array([(11.999,12), (4.68, 4.70), (0.002, 0.05)]),
-              'R' : np.array([(2.449, 2.451)]),
-              'e': np.array([(0,20)]),
-              'S0': np.array([(0.99,1)]),
-              'a':np.array([(-2,2)]),
-              'b':np.array([(-20,20)])}
-
-
-params = params_dic['Ge1'] + params_dic['Ge2'] + params_dic['Ge3'] + params_dic['e']
-bounds = np.vstack((bounds_dic['Ge1'], bounds_dic['Ge2'], bounds_dic['Ge3'], bounds_dic['S0'], bounds_dic['e']))
-# bounds_NL = np.vstack((bounds_dic['Ge1'], bounds_dic['Ge2'], bounds_dic['Ge3'], bounds_dic['e']))
-# popt, pcov = curve_fit(EXAFS_model, k.astype(float),(exp * k **2).astype(float), p0=params,bounds=bounds_NL.transpose())
-# fit = EXAFS_model(k, *popt)
-# print(*popt)
-
-# def LLE_model(params):
-#
-#     e = params[-1]
-#
-#     exp = experiments[:,(0,1)]
-#     model = EXAFS_model(k_fit, *params[:-1])
-#     k_new=np.sqrt(k_fit**2-0.2625*e)
-#     exp = interpolation(exp,k_new)
-#     LL = -np.sum(stats.norm.logpdf(exp * k_fit**weight, loc=model))
-#     return LL
+#  Define fitted experiment
 #
 #
+###################################################################
+
+def Ge_experiment(file):
+    data = np.genfromtxt(file)[:,(0,1,2)]
+    global k,chi
+    k = data[1:,0]
+    chi = data[1:,1]/k**3
+
+def CdS_experiment(experiment):
+    if experiment == 'pyspline_M311':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M311_Aug18_pyspline.dat'
+        data = np.genfromtxt(path)[:,(2,-1)]
+        exp = data[:,(0,1)]
+    elif experiment == 'pyspline_M322':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M322_Aug18_pyspline.dat'
+        data = np.genfromtxt(path)[:,(2,-1)]
+        exp = data[:,(0,1)]
+    elif experiment == 'pyspline_bulk':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_bulk_Aug18_pyspline.dat'
+        data = np.genfromtxt(path)[:,(2,-1)]
+        exp = data[:,(0,1)]
+    elif experiment == 'athena_R':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_R_Nov17.chik'
+        data = np.genfromtxt(path)[:,(0,1)]
+        exp = data[:,(0,1)]
+    elif experiment == 'athena_R_12sh':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_R_Nov17.chiq'
+        data = np.genfromtxt(path)[:,(0,1)]
+        data[1:, 1] = data[1:, 1] / data[1:, 0] ** 2
+        exp = data[:,(0,1)]
+    elif experiment == 'athena_bulk_12sh':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_bulk_Aug18_athena_12sh.chiq'
+        data = np.genfromtxt(path)[:,(0,1)]
+        data[1:,1]=data[1:,1]/data[1:,0]**2
+        exp = data[:,(0,1)]
+    elif experiment == 'athena_M311':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_XAFS_CdK_chi_2018.txt'
+        data = np.genfromtxt(path)[:,(0,2,3,4)]
+        exp = data[:,(0,1)]
+    elif experiment == 'athena_M311_12sh':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M311_2018.chiq'
+        data = np.genfromtxt(path)[:,(0,1)]
+        data[1:,1]=data[1:,1]/data[1:,0]**2
+        exp = data[:,(0,1)]
+    elif experiment == 'athena_bulk':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_XAFS_CdK_chi_2018.txt'
+        data = np.genfromtxt(path)[:,(0,2,3,4)]
+        exp = data[:,(0,2)]
+    elif experiment == 'athena_bulk_ref':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_ref.chik'
+        data = np.genfromtxt(path)[:,(0,1)]
+        exp = data[:,(0,1)]
+    elif experiment == 'athena_M322':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_XAFS_CdK_chi_2018.txt'
+        data = np.genfromtxt(path)[:,(0,2,3,4)]
+        exp = data[:,(0,3)]
+    elif experiment == 'athena_M322_12sh':
+        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M322_2018.chiq'
+        data = np.genfromtxt(path)[:,(0,1)]
+        data[1:,1]=data[1:,1]/data[1:,0]**2
+        exp = data[:,(0,1)]
+
+        global k,chi
+        k = exp[:,0]
+        chi = exp[:,1]
+    return
+
+###############################################################
+##
 #
-# # Local minimum
-# # LLE_fitresult = minimize(LLE_model, params, method='TNC', bounds=bounds,options={'maxiter': 12000})
-# # Global minimum
-# # LLE_fitresult = basinhopping(LLE_model, params,niter=200, take_step=mytakestep)
-# # Global minimu rate 4/5
-# LLE_fitresult = differential_evolution(LLE_model,bounds=bounds,strategy='randtobest1exp', popsize=100,maxiter=10000)
-#
-# # LLE_fitresult = shgo(LLE_model,bounds=bounds,iters=5)
-#
-# # LLE_fitresult = dual_annealing(LLE_model,bounds=bounds)
-# fit_LLE = EXAFS_model(k_fit, *LLE_fitresult.x[:-1])
-# print(*LLE_fitresult.x)
-####################################
-#
-#       Import fit result from Artemis
-#           and plot
-#
-######################################################
-#
-# chi_data = np.genfromtxt("/Users/Sophia/ownCloud/PhD/Simulation/Ge/c_ge12_chi.k2")[:,(0,2)]
+#  Define fit model, used in fit()
 #
 #
+###################################################################
+def LLE_model(params):
+    e = params[-1]
+    k_new = np.sqrt(k_fit ** 2 - 0.2625 * e)
+    data = np.vstack((k,chi)).transpose()
+    chi_fit = interpolation(data,k_new)
+    model_LLE = 0
+    for i in range(shell):
+        model_LLE += model_shell(k_fit, *params[(i * 3):(i * 3 + 3)])
+
+    LL = -np.sum(stats.norm.logpdf(chi_fit * k_fit ** 2, loc=model_LLE))
+    return LL
+
+
+
+###############################################################
+##
 #
-# e=LLE_fitresult.x[-1]
-# exp = experiments[:,(0,1)]
-# k_new=np.sqrt(k_fit**2-0.2625*e)
-# exp = interpolation(exp,k_new)
-# e_artemis = 12.16917
-# k_artemis = np.sqrt(k_fit**2-0.2625*e_artemis)
-# chi_data = interpolation(chi_data, k_artemis)
+#  fit
 #
 #
-# plt.figure()
-# plt.subplot(2,1,1)
-# plt.plot(k_fit, exp *k_fit**weight,'k', linewidth = 1, label = 'experiment')
-# # plt.plot(k, fit, linewidth=1, label='nonlinear curve fit (scipy) of Germanium')
-# plt.plot(k_fit,fit_LLE,linewidth=1, label='Python fit of Ge')
-# # plt.plot(k, fit, linewidth=1, label='nonlinear curve fit (scipy) of Germanium')
-# plt.plot(k_fit,chi_data,linewidth=1, label='Artemis fit of Ge')
-# plt.xlim([2,18])
-# plt.ylim([-3,3])
-# plt.xlabel('k ($\AA^{-1}$)')
-# plt.ylabel('$k^2\chi$')
-# plt.legend()
-# plt.tight_layout()
-# data = np.vstack((k_fit,exp*k_fit**weight,fit_LLE,chi_data)).transpose()
-# np.savetxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/Ge_python_artemis_fit.dat',data)
-#
-# plt.subplot(2,1,2)
-# r,amp,real,imag = calcfft(k_fit,exp*k_fit**3,kmin=3,kmax=18)
-# plt.plot(r,amp,'k', linewidth = 1, label = 'experiment')
-# # r,amp,real,imag = calcfft(k,fit*k,kmin=3,kmax=18)
-# # plt.plot(r,amp, linewidth=1, label='nonlinear curve fit (scipy) of Germanium')
-# r,amp,real,imag = calcfft(k_fit,fit_LLE*k_fit,kmin=3,kmax=18)
-# plt.plot(r,amp,linewidth=1, label='Python fit of Ge')
-#
-# r,amp,real,imag = calcfft(k_fit,chi_data*k_fit,kmin=3,kmax=18)
-# plt.plot(r,amp,linewidth=1, label='Artemis fit of Ge')
-# plt.xlabel('R ($\AA$)')
-# plt.ylabel('Intensity')
-# plt.legend()
-# plt.xlim([0,5])
-# plt.tight_layout()
-# plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/Ge_analysis.pdf',format='pdf')
-# plt.show()
+###################################################################
 
-#####################################################
-#
-#      Import chi from each shell
-#           and fit
-#
-######################################################
+def fit(seed):
+    if seed % 2 != 0:
+        LLE_fitresult = differential_evolution(LLE_model, bounds=bounds, strategy='currenttobest1bin', maxiter=1000,
+                                               seed=seed)
+    else:
+        LLE_fitresult = differential_evolution(LLE_model, bounds=bounds, strategy='best1bin', maxiter=100000, seed=seed)
 
-
-
-def Ge_shell(shell):
-    data = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/c_ge12_chi.xmu')
-    data1 = data[:,1]
-    data2 = data[:,2]
-    data3 = data[:,3]
-
-    k_fine = np.linspace(3,18,51201)
-    # interpolate each file with k_fine
-
-    k = np.sqrt(data[:,0]/3.81)
-    if shell == 1:
-        chi = data1
-        exp = np.vstack((k,chi)).transpose()
-    elif shell == 2:
-        chi = data2-data1
-        exp = np.vstack((k,chi)).transpose()
-    elif shell == 3:
-        chi = data3-data2
-        exp = np.vstack((k,chi)).transpose()
-
-
-    def model_shell(x,N,R,ss):
-        return N * x ** weight \
-               * np.abs( eval('Feff'+str(shell))) / (x * R ** 2) \
-               * np.sin(2 * x * R +  eval('phase'+str(shell))) \
-               * np.exp(-2 * R /  eval('lambda'+str(shell))) \
-               * np.exp(-2 * ss * x ** 2)
-
-    def model_amp(x,R):
-        return amp * np.sin(2 * x * R +  eval('phase'+str(shell))) * x ** weight
-
-    # bounds = np.vstack((bounds_dic['Ge'+str(shell)], bounds_dic['S0'], bounds_dic['e']))
-    bounds = np.vstack((bounds_dic['R'], bounds_dic['S0'], bounds_dic['e']))
-
-    def LLE_model(params):
-        global exp,model
-        e = params[-1]
-        S0 = params[-2]
-        # print('ss',params[-3])
-        # print('k',k)
-        k_new = np.sqrt(k**2+0.2625*e)
-        # print('k_new',k_new)
-        g = interp1d(k_new,chi)
-        exp_fit = g(k_fit.tolist())/S0
-        model_LLE = model_amp(k_fit, *params[:-2])
-        LL = -np.sum(stats.norm.logpdf(exp_fit * k_fit**weight, loc=model_LLE))
-        return LL
-
-
-    LLE_fitresult = differential_evolution(LLE_model,bounds=bounds,strategy='best1exp', popsize=200,maxiter=10000)
-    fit_LLE = model_amp(k_fit, *LLE_fitresult.x[:-2])
-    LL = LLE_model(LLE_fitresult.x)
-    e=LLE_fitresult.x[-1]
-    S0=LLE_fitresult.x[-2]
-    ss=LLE_fitresult.x[-3]
-    print(e,S0,ss)
-    k_new=np.sqrt(k**2+0.2625*e)
-    g = interp1d(k_new,chi)
-    exp_fit = g(k_fit.tolist())
-
-
-    plt.plot(k_fit, exp_fit * k_fit **weight,'k',linewidth=0.5)
-    plt.plot(k_fit,fit_LLE*S0,linewidth=0.5,label='shell' + str(shell) + '\n' + 'e= {:.2f}   S0 = {:.2f}   ss = {:.5f}   LL = {:.2F}\n\n'.format(e,S0,ss,LL) )
-    plt.plot(k_fit,fit_LLE*S0-exp_fit*k_fit**weight -2,linewidth=0.5,label='difference')
-    plt.xlim([2,26])
-    plt.xlabel('K $(\AA^{-1})$')
-    plt.ylabel('$\chi(k)k^2$')
-    plt.legend()
-    plt.tight_layout()
-    data = np.vstack((k_fit,exp_fit*k_fit**weight,fit_LLE*S0,exp_fit*k_fit**weight-fit_LLE*S0)).transpose()
-    np.savetxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/Ge_fit_shell'+str(shell)+'.dat',data,header='k  experiment_k^2 fit_k^2 difference')
-
-    plt.savefig('/Users/Sophia/ownCloud/PhD/Statistic Analysis/figure/Ge_shell'+str(shell)+'fit.pdf',format='pdf')
-    plt.show()
-    return e,ss
-
-
-#####################################################
-#
-#      Fix N,R,ss,e, S0
-#           and fit Feff and phase
-#
-######################################################
-
-
-def calc_Feff_phase():
-
-
-    def phase_model(b,c,d):
-        return phase1 + (b*k_fit**2 + c*k_fit +d)
-    def Feff_model(a,b,c,d):
-        return Feff1 + a*k_fit**3 +b*k_fit**2 + c*k_fit +d
-
-    def model_FEFF(x,b2,c2,d2):
-        N = 4
-        R = 2.45
-        ss = 0.00305
-        return N* x **weight \
-               * np.abs(Feff1) / (x * R ** 2) \
-               * np.sin(2 * x * R +  phase_model(b2,c2,d2)) \
-               * np.exp(-2 * R /  lambda1) \
-               * np.exp(-2 * ss * x ** 2)
-    global exp
-    data = np.genfromtxt('/Users/Sophia/ownCloud/PhD/Experiment_Analysis/Ge/ge12_1sh_ev.dat',skip_header=2)
-    k = np.sqrt(data[:,0]/3.81)
-    chi = data[:,1]
-    exp = np.vstack((k,chi)).transpose()
-
-
-
-    def LLE_model_FEFF(params):
-        global exp
-        # print(exp)
-        e =params[-1]
-        S0 = 0.96
-        k_new = np.sqrt(k_fit**2-0.2625*e)
-        # params = params.tolist()
-        print(params)
-        exp_new = interpolation(exp,k_new)/S0
-
-        model_LLE = model_FEFF(k_fit,*params[:-1])
-        LL = -np.sum(stats.norm.logpdf(exp_new * k_fit**weight, loc=model_LLE))
-        return LL
-
-    bounds_FEFF =np.vstack((bounds_dic['a'],bounds_dic['a'],bounds_dic['b'],bounds_dic['e']))
-    # LLE_fitresult = differential_evolution(LLE_model_FEFF,bounds=bounds_FEFF,strategy='randtobest1exp', popsize=10,maxiter=10000)
-    LLE_fitresult = differential_evolution(LLE_model_FEFF,bounds=bounds_FEFF)
     params = LLE_fitresult.x
-
-    e =params[-1]
-    print(e)
-    fit_LLE = model_FEFF(k_fit, *params[:-1])
-    LL = LLE_model_FEFF(params)
-    params = [ '%.5f' % elem for elem in params]
-    label_result = ''
-    for a in params:
-        label_result = label_result + a + '\n'
-
-    S0 = 1
-    k_new = np.sqrt(k_fit**2-0.2625*e)
-    exp_new = interpolation(exp,k_new)/S0
-
-
-    plt.figure()
-    plt.plot(k_fit,exp_new*k_fit**2,'k',linewidth=0.5)
-    plt.plot(k_fit,fit_LLE,linewidth=0.5,label = 'LL = {:.2f} \n'.format(LL) +'parameter = {:s}'.format(label_result))
-    plt.legend()
-    plt.xlabel('K $(\AA^{-1})$')
-    plt.ylabel('$\chi(k)k^2$')
-    plt.show()
-# calc_Feff_phase()
+    model_LLE = 0
+    for i in range(shell):
+        model_LLE += model_shell(k_fit, *params[i*3:i*3+3])
+    LL = LLE_model(params)
+    e = params[-1]
+    k_new = np.sqrt(k_fit ** 2 - 0.2625 * e)
+    data = np.vstack((k, chi)).transpose()
+    chi_fit = interpolation(data, k_new)
+    params = np.append(params,LL)
+    return chi_fit, model_LLE, params
 
 
 ###############################################################
 ##
 #
-#  used calculated phase from calc_phase() to plot the curve
+#  put fit result in a dictionary
+#  1. i is looped sequence
+#  2. experiment is the file name which will be recorded
+#
+###################################################################
+def gen_fit_result(experiment,i,seed=0):
+    parameter[experiment + '_chi_fit' + str(i)],parameter[experiment+'_model_LLE'+str(i)],\
+    parameter[experiment+'_params'+str(i)]  = fit(seed)
+
+###############################################################
+##
+#
+#  1. run fit in a looped times
+#  2. store all results
+#  3. find best fit
+#
+###################################################################
+
+def loop_min_LL(experiment,loop_num):
+    gen_fit_result(experiment, 0)
+    parameter[experiment] = np.vstack((np.reshape(parameter[experiment + '_chi_fit' + str(0)], (-1, 1)),
+                                                np.reshape(parameter[experiment + '_model_LLE' + str(0)], (-1, 1)),
+                                                np.reshape(parameter[experiment + '_params' + str(0)], (-1, 1))))
+    parameter[experiment + '_k'] = k
+    parameter[experiment + '_chi'] = chi
+    global results
+    results = parameter[experiment]
+    #########################
+    #
+    # use parallel computing
+    #
+    #>>>>>>>>>>>>>>>>>>>>>>>>
+    pool = mp.Pool(mp.cpu_count())
+    print(mp.cpu_count())
+
+    def cal_fit(experiment, i):
+        print('################################ loop ', i)
+        gen_fit_result(experiment, i, seed=i + np.random.randint(50))
+        parameter[experiment + str(i)] = np.vstack((np.reshape(parameter[experiment + '_chi_fit' + str(i)], (-1, 1)),
+                                                    np.reshape(parameter[experiment + '_model_LLE' + str(i)], (-1, 1)),
+                                                    np.reshape(parameter[experiment + '_params' + str(i)], (-1, 1))))
+        return parameter[experiment + str(i)]
+
+    def collected_result(result):
+        global results
+        results = np.append(results, result, axis=1)
+
+    for i in range(loop_num):
+        parameter[experiment+str(i)] = pool.apply_async(cal_fit, args=(experiment, i),callback=collected_result)
+
+    pool.close()
+    pool.join()
+    #<<<<<<<<<<<<<<<<<<<<<<
+    #
+    # use parallel computing
+    #
+    #############################
+    parameter[experiment] = results
+    min_LL_index = parameter[experiment][-1,:].argmin()
+
+    parameter[experiment + '_chi_fit'] = parameter[experiment][:len(k_fit),min_LL_index]
+    parameter[experiment + '_model_LLE'] =  parameter[experiment][len(k_fit):len(k_fit)*2,min_LL_index]
+    parameter[experiment + '_LL'] = parameter[experiment][-1,min_LL_index]
+    parameter[experiment + 'e'] = parameter[experiment][-2, min_LL_index]
+    parameter[experiment + '_params_list'] = parameter[experiment][-shell*3-2:,:]
+    parameter[experiment + '_params'] = parameter[experiment][-shell*3-2:-2,min_LL_index]
+
+    np.savetxt(result_path+experiment+'_params_all.dat',parameter[experiment][-shell*3-2:,:].transpose(),header='N R delss e LL')
+
+    return
+
+
+
+###############################################################
+##
+#
+#  find the best fit in all fitted results and plot
 #
 #
 ###################################################################
-def use_calc_4_fit(shell):
-    k_fine,chi,phase = calc_phase(shell)
-    if shell == 1:
-        R = 2.45
-        N = 4
-    elif shell == 2:
-        R = 4.0
-        N = 12
-    elif shell == 3:
-        R = 4.69
-        N = 12
 
-    fit = N*np.abs(eval('Feff'+str(shell))) / (k_fit * R ** 2) \
-          * np.sin(2 * k_fit * R + phase) \
-          * np.exp(-2 * R /  eval('lambda'+str(shell))) \
-          * np.exp(-2 * 0.0054 * k_fit ** 2)
+def plot_best_fit(experiment, loop_num=1000):
+    loop_min_LL(experiment, loop_num)
+
     plt.figure()
-    plt.plot(k_fit,fit*k_fit**weight)
-    plt.plot(k_fine,chi*k_fine**weight,label='experiment',linewidth='0.5')
+
+    plt.plot(parameter[experiment + '_k'], parameter[experiment + '_chi'] * parameter[experiment + '_k'] ** 2, '.', markersize=0.8,
+             label=experiment)
+    plt.plot(k_fit, parameter[experiment + '_chi_fit'] * k_fit ** 2, linewidth=0.5, label=experiment+'_e_shifted')
+    plt.plot(k_fit, parameter[experiment + '_model_LLE'], linewidth=0.5, label=experiment + '_fit')
+    plt.plot(k_fit, parameter[experiment + '_model_LLE'] - parameter[experiment + '_chi_fit'] * k_fit ** 2,
+             linewidth=0.5, label=experiment + '_difference')
+    data = np.vstack((k_fit, parameter[experiment + '_chi_fit'],
+                      parameter[experiment + '_model_LLE'] / k_fit ** 2,
+                      parameter[experiment + '_model_LLE'] / k_fit ** 2
+                      - parameter[experiment + '_chi_fit'])).transpose()
+    np.savetxt(result_path + experiment + '_fit.dat', data, header='k    chi_fitted with shifted e      fit/chi     difference')
+    plt.legend(loc='lower right')
     plt.xlabel('k ($\AA^{-1}$)')
-    plt.title('$\chi$ result with calculated phase in shell %d'%shell)
-    plt.show()
+    plt.ylabel('$k^2\chi$')
+    plt.tight_layout()
+    print(parameter[experiment + '_params'])
+    print(shell)
+    params_text = ['shell'+ str(i+1) +'  {:.2f}  {:.3f}  {:.5f} \n'.format(*parameter[experiment + '_params'][3*i:3*i+3])
+                   for i in range(shell) ]
+    params_label = ''
+    for i in range(shell):
+        params_label += params_text[i]
 
 
-# use_calc_4_fit(3)
+    plt.text(0.1, 0, 'LL = ' + str(parameter[experiment + '_LL']) + '\n'
+             + ' e  = '  + str(parameter[experiment + 'e']) + '\n'
+             + '            N        R      del_ss\n'
+             + params_label )
 
+    plt.savefig(result_path + 'fit_' + experiment + '_(extracted_feature).pdf',format='pdf')
+    plt.close()
+    return
+
+###############################################################
+##
+#
+#  statistic distribution of fit result
 #
 #
-# for i in range(8):
-#     if i == 0 :
-#         e = 14.4
-#         ss = 0.0054
-#         phase1 = calc_phase(1)
-#         Feff1 = calc_Feff(1)
-#     e,ss = Ge_shell(1)
-#     phase1 = calc_phase(1)
-#     Feff1 = calc_Feff(1)
+###################################################################
+
+def plot_fit_hist(experiment):
+
+    def param_list(i):
+        N = parameter[experiment+'_params_list'][i,:]
+        R = parameter[experiment+'_params_list'][i+1,:]
+        delss = parameter[experiment+'_params_list'][i+2,:]
+        return N,R,delss
+
+    LL = parameter[experiment+'_params_list'][-1,:]
+    weight = (LL - np.max(LL))/(np.min(LL)-np.max(LL))
+    weight = weight/np.sum(weight)
+
+
+    plt.figure(figsize=(15,(shell+1)*2.5))
+    sns.set()
+
+    for i in range(shell):
+        N,R,delss = param_list(i)
+        plt.subplot(shell,3,i+1)
+        plt.hist(N,weights=weight,bins=50)
+        plt.xlabel('shell '+'i'+' coordination number')
+        plt.tight_layout()
+
+        plt.subplot(shell,3,i+2)
+        plt.hist(R,weights=weight,bins=50)
+        plt.xlabel('shell '+'i'+' bond length ($\AA$)')
+        plt.tight_layout()
+
+        plt.subplot(shell,3,i+3)
+        plt.hist(R,weights=weight,bins=50)
+        plt.xlabel('shell '+'i'+' relative Debye-Waller factor compared with bul')
+        plt.tight_layout()
+
+
+    plt.savefig(result_path + 'fit_'+experiment+'_histogram.pdf',format='pdf')
+    plt.close()
+
+    weight = np.ones(np.shape(LL)[0])/np.shape(LL)[0]
+
+
+    plt.figure(figsize=(15,(shell+1)*2.5))
+    sns.set()
+
+    for i in range(shell):
+        N,R,delss = param_list(i)
+        plt.subplot(shell,3,i+1)
+        plt.hist(N,weights=weight,bins=50)
+        plt.xlabel('shell '+'i'+' coordination number')
+        plt.tight_layout()
+
+        plt.subplot(shell,3,i+2)
+        plt.hist(R,weights=weight,bins=50)
+        plt.xlabel('shell '+'i'+' bond length ($\AA$)')
+        plt.tight_layout()
+
+        plt.subplot(shell,3,i+3)
+        plt.hist(R,weights=weight,bins=50)
+        plt.xlabel('shell '+'i'+' relative Debye-Waller factor compared with bul')
+        plt.tight_layout()
+
+    plt.savefig(result_path + 'fit_'+experiment[7:]+'_histogram(no_weight).pdf',format='pdf')
+    plt.close()
+    return
+
+#############################################################
 #
-# e,ss = Ge_shell(1)
-# data = np.vstack((k_fit,Feff1,phase1,lambda1)).transpose()
-# np.savetxt('/Users/Sophia/ownCloud/PhD/Simulation/Ge/FEFF1fromEXP.dat',data,header='k,Feff,phase,lambda')
+# calculate covariance and correlation matrix here
+#
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+def correlation(experiment):
+    variable = parameter[experiment][-3*shell-2:-2,:]
+    covariance = np.cov(variable)
+    corr,_=stats.spearmanr(variable,axis=1)
+    return corr
+##<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#
+# calculate covariance and correlation matrix here
+#
+# ############################################################
 
-for i in range(1):
-    if i == 0:
-        e = 14.4
-        ss = 0.0032
-
-    # phase1 = calc_phase(1)
-    amp,phase1 = calc_amp(1)
 
 
+#############################################################
+#
+# plot correlation
+#
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+def plot_corr(experiment):
+    corr = correlation(experiment)
+    sns.set(style="white")
+    mask = np.zeros_like(corr, dtype=np.bool)
+    mask[np.triu_indices_from(mask)] = True
+    f, ax = plt.subplots(figsize=(11, 9))
+    cmap = sns.diverging_palette(220,10, as_cmap=True)
+    label = []
+    for i in range(shell):
+        label.append('shell'+ str(i+1) +'_N')
+        label.append('shell'+ str(i+1) +'_R')
+        label.append('shell'+ str(i+1) +'_delss')
+
+    sns.heatmap(corr, mask=mask, cmap=cmap, vmax=1, annot=True, center=0,
+                square=True, linewidths=.5, cbar_kws={"shrink": .5},
+                xticklabels=label,
+                yticklabels=label)
+    plt.savefig(
+        result_path + '/correlation_' + experiment + '.pdf',
+        format='pdf')
+    plt.close()
+
+
+############################################################
+#
+# Fit for Gemanium experiment
+#
+############################################################
+# filelist = glob.glob('/Users/sophia/ownCloud/PhD/Experiment_Analysis/Ge/Ge_QDs_HP_Nano_Letters/Ge_HP_Chi-k/*.k3')
+#     FEFF_exp(Ge_extract)
+# for file in filelist:
+#     filename = os.path.basename(file)
+#     Ge_experiment(file)
+#     Ge_bounds()
+#     plot_best_fit(filename[:-3], loop_num=10)
+#     plot_fit_hist(filename[:-3])
+#     plot_corr(filename[:-3])
+#     print(filename)
+
+
+############################################################
+#
+# Fit for CdS experiment
+#
+############################################################
+experiment_list = ['athena_bulk_12sh','athena_bulk','athena_R','athena_M311','athena_M322','athena_R_12sh','athena_M311_12sh','athena_M322_12sh','pyspline_M311','pyspline_M322','pyspline_bulk']
+FEFF_exp(CdSO_extract_cluster)
+def parel_plot(experiment,loop_num=10):
+    plot_best_fit(experiment,loop_num=loop_num)
+    plot_fit_hist(experiment)
+    plot_corr(experiment)
+    return
+for i in experiment_list:
+    parel_plot(i,loop_num=4)
 
