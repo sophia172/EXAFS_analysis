@@ -24,9 +24,9 @@ import multiprocess as mp
 ###########################   Change for different system#######################################
 
 parameter={}
-k_fit = np.linspace(2,16.5,500)
-R1= 2.47
-R2 = 3
+k_fit = np.linspace(2,16.5,500)                                                   ###
+R1= 2.40                                                                          ### need change
+R2 = 3                                                                            ###
 
 ###########################MAIN#######################################
 
@@ -80,12 +80,14 @@ def extract_amp_phase_lambda(exp_base_path,lambda_path,result_path,N=1,R=1,path_
     plt.plot(k_fit,Feff,label='experiment Feff  including MSRD')
     plt.title('foundamental experiement Feff extraction')
     plt.legend()
+    plt.tight_layout()
 
     plt.subplot(2, 1, 2)
     plt.plot(FEFF[:, 0], FEFF[:, 1]+FEFF[:, 3], label='FEFF calculated phase')
     plt.plot(k_fit, phase, label='experiment phase')
     plt.title('foundamental experiement phase extraction')
     plt.legend()
+    plt.tight_layout()
     plt.savefig(result_path+'extracted_{:s}.pdf'.format(path_name),
                 format='pdf')
     plt.close()
@@ -222,10 +224,10 @@ def Ge_bounds():
     bounds = np.vstack((bounds_dic['Ge1'],bounds_dic['e']))
     return
 
-def CdOS_bounds():
-    global bounds
-    bounds = np.vstack((bounds_dic['CdO'],bounds_dic['CdS'],bounds_dic['e']))
-    return
+def CdOS_bounds():                                                                    ###
+    global bounds                                                                     ### need change
+    bounds = np.vstack((bounds_dic['CdS'],bounds_dic['CdS'],bounds_dic['CdCd'],bounds_dic['e']))
+    return                                                                            ###
 
 ###############################################################
 ##
@@ -264,9 +266,10 @@ def CdSO_extract_cluster():
     exp_path2 = '/data/home/apw399/EXAFS_analysis/source/CdS_bulk_Aug18_athena_1sh.chiq'
     exp_path3 = '/data/home/apw399/EXAFS_analysis/source/CdS_bulk_Aug18_athena_2sh.chiq'
     exp_path1 = '/data/home/apw399/EXAFS_analysis/source/CdO_ref_1sh.chiq'
-    result_path = '/data/home/apw399/EXAFS_analysis/result/CdO_CdS/'
-
-    shell_num = 2
+    ### need change
+    result_path = '/data/home/apw399/EXAFS_analysis/result/2CdS_CdCd/'                   ###
+    ### need change
+    shell_num = 3                                                                      ###
     CdSO_FEFF = {}
     CdSO_FEFF['Feff2'], CdSO_FEFF['phase2'], CdSO_FEFF['lambda2'] = \
         extract_amp_phase_lambda(exp_path2,FEFF_path2, result_path, N=4,R=2.5118,path_name='Cd-S')
@@ -462,9 +465,9 @@ def plot_best_fit(experiment, loop_num=1000):
 def plot_fit_hist(experiment):
 
     def param_list(i):
-        N = parameter[experiment+'_params_list'][i,:]
-        R = parameter[experiment+'_params_list'][i+1,:]
-        delss = parameter[experiment+'_params_list'][i+2,:]
+        N = parameter[experiment+'_params_list'][i*3,:]
+        R = parameter[experiment+'_params_list'][i*3+1,:]
+        delss = parameter[experiment+'_params_list'][i*3+2,:]
         return N,R,delss
 
     LL = parameter[experiment+'_params_list'][-1,:]
@@ -488,7 +491,7 @@ def plot_fit_hist(experiment):
         plt.tight_layout()
 
         plt.subplot(shell,3,i*3+3)
-        plt.hist(R,weights=weight,bins=50)
+        plt.hist(delss,weights=weight,bins=50)
         plt.xlabel('shell '+str(i+1)+' relative Debye-Waller factor compared with bul')
         plt.tight_layout()
 
@@ -515,12 +518,12 @@ def plot_fit_hist(experiment):
         plt.tight_layout()
 
         plt.subplot(shell,3,i*3+3)
-        plt.hist(R,weights=weight,bins=50)
+        plt.hist(delss,weights=weight,bins=50)
         plt.xlabel('shell '+str(i+1)+' relative Debye-Waller factor compared with bul')
         plt.tight_layout()
 
     print('Finish plotting fit analysis without weight, saving figure ..........')
-    plt.savefig(result_path + 'fit_'+experiment[7:]+'_histogram(no_weight).pdf',format='pdf')
+    plt.savefig(result_path + 'fit_'+experiment+'_histogram(no_weight).pdf',format='pdf')
     plt.close()
     return
 
@@ -607,6 +610,6 @@ def parel_plot(experiment,loop_num=10):
     plot_fit_hist(experiment)
     plot_corr(experiment)
     return
-for i in experiment_list:
-    parel_plot(i,loop_num=5000)
+for i in experiment_list[:6]:
+    parel_plot(i,loop_num=10000)
 
