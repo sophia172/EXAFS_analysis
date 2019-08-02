@@ -363,7 +363,7 @@ def loop_min_LL(experiment,loop_num):
     #
     #>>>>>>>>>>>>>>>>>>>>>>>>
     pool = mp.Pool(mp.cpu_count())
-    print(mp.cpu_count())
+    print('CPU number :  ',mp.cpu_count())
 
     def cal_fit(experiment, i):
         print('################################ loop ', i)
@@ -382,6 +382,8 @@ def loop_min_LL(experiment,loop_num):
 
     pool.close()
     pool.join()
+
+    print('Finished Looping, Now saving result to data file.........')
     #<<<<<<<<<<<<<<<<<<<<<<
     #
     # use parallel computing
@@ -413,7 +415,7 @@ def loop_min_LL(experiment,loop_num):
 
 def plot_best_fit(experiment, loop_num=1000):
     loop_min_LL(experiment, loop_num)
-
+    print('\n Start plotting best fit in ', experiment, '..........')
     plt.figure()
 
     plt.plot(parameter[experiment + '_k'], parameter[experiment + '_chi'] * parameter[experiment + '_k'] ** 2, '.', markersize=0.8,
@@ -439,11 +441,12 @@ def plot_best_fit(experiment, loop_num=1000):
     for i in range(shell):
         params_label += params_text[i]
 
-    plt.text(10, 0.3, 'LL = ' + str(parameter[experiment + '_LL']) + '\n'
+    plt.text(9, 0.2, 'LL = ' + str(parameter[experiment + '_LL']) + '\n'
              + ' e  = '  + str(parameter[experiment + 'e']) + '\n'
              + '            N        R      del_ss\n'
              + params_label)
 
+    print(' Finish plotting best fit, Save figure ........')
     plt.savefig(result_path + 'fit_' + experiment + '_(extracted_feature).pdf',format='pdf')
     plt.close()
     return
@@ -468,7 +471,7 @@ def plot_fit_hist(experiment):
     weight = (LL - np.max(LL))/(np.min(LL)-np.max(LL))
     weight = weight/np.sum(weight)
 
-
+    print('\n Start plotting fit analysis with weight in ', experiment, '..........')
     plt.figure(figsize=(15,(shell+1)*2.5))
     sns.set()
 
@@ -489,13 +492,13 @@ def plot_fit_hist(experiment):
         plt.xlabel('shell '+str(i+1)+' relative Debye-Waller factor compared with bul')
         plt.tight_layout()
 
-
+    print(' Finish plotting fit analysis with weight, saving figure ..........')
     plt.savefig(result_path + 'fit_'+experiment+'_histogram.pdf',format='pdf')
     plt.close()
 
     weight = np.ones(np.shape(LL)[0])/np.shape(LL)[0]
 
-
+    print('\n Start plotting fit analysis in ', experiment, ' without weight..........')
     plt.figure(figsize=(15,(shell+1)*2.5))
     sns.set()
 
@@ -516,6 +519,7 @@ def plot_fit_hist(experiment):
         plt.xlabel('shell '+str(i+1)+' relative Debye-Waller factor compared with bul')
         plt.tight_layout()
 
+    print('Finish plotting fit analysis without weight, saving figure ..........')
     plt.savefig(result_path + 'fit_'+experiment[7:]+'_histogram(no_weight).pdf',format='pdf')
     plt.close()
     return
@@ -526,6 +530,7 @@ def plot_fit_hist(experiment):
 #
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 def correlation(experiment):
+    print('\n Analyzing correlation in fitting parameter in ', experiment, '......... ')
     variable = parameter[experiment][-3*shell-2:-2,:]
     covariance = np.cov(variable)
     corr,_=stats.spearmanr(variable,axis=1)
@@ -556,10 +561,12 @@ def plot_corr(experiment):
         label.append('shell'+ str(i+1) +'_R')
         label.append('shell'+ str(i+1) +'_delss')
 
+    print('\n Start plotting correlation analysis in ', experiment, '..........')
     sns.heatmap(corr, mask=mask, cmap=cmap, vmax=1, annot=True, center=0,
                 square=True, linewidths=.5, cbar_kws={"shrink": .5},
                 xticklabels=label,
                 yticklabels=label)
+    print('\n Finish plotting correlation analysis, saving figure..........')
     plt.savefig(
         result_path + '/correlation_' + experiment + '.pdf',
         format='pdf')
@@ -594,6 +601,7 @@ experiment_list = ['athena_bulk_12sh','athena_bulk','athena_R','athena_M311','at
 FEFF_exp(CdSO_extract_cluster)
 CdOS_bounds()
 def parel_plot(experiment,loop_num=10):
+    print('\n \n \n Start processing experiment data :  ', experiment,' .......................')
     CdS_experiment(experiment)
     plot_best_fit(experiment,loop_num=loop_num)
     plot_fit_hist(experiment)

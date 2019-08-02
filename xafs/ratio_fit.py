@@ -1,6 +1,6 @@
 ####  fit Cd-O and Cd-S ratio
 from xafs import *
-from ipywidgets import interact
+# from ipywidgets import interact
 
 def interpolation(f, x):
     g = interp1d(f[:, 0], f[:, 1])
