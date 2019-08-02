@@ -24,7 +24,7 @@ import multiprocess as mp
 ###########################   Change for different system#######################################
 
 parameter={}
-k_fit = np.linspace(2,15,500)
+k_fit = np.linspace(2,16.5,500)
 R1= 2.47
 R2 = 3
 
@@ -335,7 +335,7 @@ def fit(seed):
 #  2. experiment is the file name which will be recorded
 #
 ###################################################################
-def gen_fit_result(experiment,i,seed=0):
+def gen_fit_result(experiment,i,seed=8754563):
     parameter[experiment + '_chi_fit' + str(i)],parameter[experiment+'_model_LLE'+str(i)], \
     parameter[experiment+'_params'+str(i)]  = fit(seed)
 
@@ -439,11 +439,10 @@ def plot_best_fit(experiment, loop_num=1000):
     for i in range(shell):
         params_label += params_text[i]
 
-
-    plt.text(0.1, 0, 'LL = ' + str(parameter[experiment + '_LL']) + '\n'
+    plt.text(10, 0.3, 'LL = ' + str(parameter[experiment + '_LL']) + '\n'
              + ' e  = '  + str(parameter[experiment + 'e']) + '\n'
              + '            N        R      del_ss\n'
-             + params_label )
+             + params_label)
 
     plt.savefig(result_path + 'fit_' + experiment + '_(extracted_feature).pdf',format='pdf')
     plt.close()
@@ -601,5 +600,5 @@ def parel_plot(experiment,loop_num=10):
     plot_corr(experiment)
     return
 for i in experiment_list:
-    parel_plot(i,loop_num=4)
+    parel_plot(i,loop_num=5000)
 
