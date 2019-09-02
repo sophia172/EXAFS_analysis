@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d,UnivariateSpline,LSQUnivariateSpline
 from scipy.optimize import curve_fit
 import glob
+from scipy import integrate
 from scipy import stats
 from scipy.optimize import *
 # from numdifftools import Jacobian
@@ -15,7 +16,7 @@ from scipy.signal import *
 from numpy import linalg
 import seaborn as sns
 from scipy.stats import norm
-
+from matplotlib import cm
 
 # import pylab, os, numpy, getpass, wx
 # import sys
@@ -24,10 +25,10 @@ import multiprocess as mp
 ###########################   Change for different system#######################################
 
 parameter={}
-k_fit = np.linspace(2,16.5,500)                                                   ###
+k_fit = np.linspace(2,17,500)                                                   ###
 R1= 2.40                                                                          ### need change
 R2 = 3                                                                            ###
-
+cmap = cm.get_cmap('tab10')
 ###########################MAIN#######################################
 
 ###########################MAIN#######################################
@@ -145,54 +146,54 @@ def Ge_experiment(file):
 
 def CdS_experiment(experiment):
     if experiment == 'pyspline_M311':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M311_Aug18_pyspline.dat'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdO_CdS_CdCd/CdS_M311_Aug18_pyspline.dat'
         data = np.genfromtxt(path)[:,(2,-1)]
         exp = data[:,(0,1)]
     elif experiment == 'pyspline_M322':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M322_Aug18_pyspline.dat'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_M322_Aug18_pyspline.dat'
         data = np.genfromtxt(path)[:,(2,-1)]
         exp = data[:,(0,1)]
     elif experiment == 'pyspline_bulk':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_bulk_Aug18_pyspline.dat'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_bulk_Aug18_pyspline.dat'
         data = np.genfromtxt(path)[:,(2,-1)]
         exp = data[:,(0,1)]
     elif experiment == 'athena_R':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_R_Nov17.chik'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_R_Nov17.chik'
         data = np.genfromtxt(path)[:,(0,1)]
         exp = data[:,(0,1)]
     elif experiment == 'athena_R_12sh':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_R_Nov17.chiq'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_R_Nov17.chiq'
         data = np.genfromtxt(path)[:,(0,1)]
         data[1:, 1] = data[1:, 1] / data[1:, 0] ** 2
         exp = data[:,(0,1)]
     elif experiment == 'athena_bulk_12sh':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_bulk_Aug18_athena_12sh.chiq'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_bulk_Aug18_athena_12sh.chiq'
         data = np.genfromtxt(path)[:,(0,1)]
         data[1:,1]=data[1:,1]/data[1:,0]**2
         exp = data[:,(0,1)]
     elif experiment == 'athena_M311':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_XAFS_CdK_chi_2018.txt'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_XAFS_CdK_chi_2018.txt'
         data = np.genfromtxt(path)[:,(0,2,3,4)]
         exp = data[:,(0,1)]
     elif experiment == 'athena_M311_12sh':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M311_2018.chiq'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_M311_2018.chiq'
         data = np.genfromtxt(path)[:,(0,1)]
         data[1:,1]=data[1:,1]/data[1:,0]**2
         exp = data[:,(0,1)]
     elif experiment == 'athena_bulk':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_XAFS_CdK_chi_2018.txt'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_XAFS_CdK_chi_2018.txt'
         data = np.genfromtxt(path)[:,(0,2,3,4)]
         exp = data[:,(0,2)]
     elif experiment == 'athena_bulk_ref':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_ref.chik'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_ref.chik'
         data = np.genfromtxt(path)[:,(0,1)]
         exp = data[:,(0,1)]
     elif experiment == 'athena_M322':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_XAFS_CdK_chi_2018.txt'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_XAFS_CdK_chi_2018.txt'
         data = np.genfromtxt(path)[:,(0,2,3,4)]
         exp = data[:,(0,3)]
     elif experiment == 'athena_M322_12sh':
-        path = '/data/home/apw399/EXAFS_analysis/experiment/CdS_M322_2018.chiq'
+        path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/experiment/CdS_M322_2018.chiq'
         data = np.genfromtxt(path)[:,(0,1)]
         data[1:,1]=data[1:,1]/data[1:,0]**2
         exp = data[:,(0,1)]
@@ -260,14 +261,14 @@ def Ge_extract():
 
 
 def CdSO_extract_cluster():
-    FEFF_path2 = '/data/home/apw399/EXAFS_analysis/source/feff_CdS.dat'
-    FEFF_path3 = '/data/home/apw399/EXAFS_analysis/source/feff_CdCd.dat'
-    FEFF_path1 = '/data/home/apw399/EXAFS_analysis/source/feff_CdO.dat'
-    exp_path2 = '/data/home/apw399/EXAFS_analysis/source/CdS_bulk_Aug18_athena_1sh.chiq'
-    exp_path3 = '/data/home/apw399/EXAFS_analysis/source/CdS_bulk_Aug18_athena_2sh.chiq'
-    exp_path1 = '/data/home/apw399/EXAFS_analysis/source/CdO_ref_1sh.chiq'
+    FEFF_path2 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/source/feff_CdS.dat'
+    FEFF_path3 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/source/feff_CdCd.dat'
+    FEFF_path1 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/source/feff_CdO.dat'
+    exp_path2 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/source/CdS_bulk_Aug18_athena_1sh.chiq'
+    exp_path3 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/source/CdS_bulk_Aug18_athena_2sh.chiq'
+    exp_path1 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/source/CdO_ref_1sh.chiq'
     ### need change
-    result_path = '/data/home/apw399/EXAFS_analysis/result/2CdS_CdCd/'                   ###
+    result_path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/result/2CdS_CdCd/'                   ###
     ### need change
     shell_num = 3                                                                      ###
     CdSO_FEFF = {}
@@ -463,14 +464,14 @@ def plot_best_fit(experiment, loop_num=1000):
 ###################################################################
 
 def plot_fit_hist(experiment):
-
     def param_list(i):
-        N = parameter[experiment+'_params_list'][i*3,:]
-        R = parameter[experiment+'_params_list'][i*3+1,:]
-        delss = parameter[experiment+'_params_list'][i*3+2,:]
+        data = np.genfromtxt(result_path + experiment + '_params_all.dat')
+        N = data[:,i*3]
+        R = data[:,i*3+1]
+        delss = data[:,i*3+2]
         return N,R,delss
 
-    LL = parameter[experiment+'_params_list'][-1,:]
+    LL = np.genfromtxt(result_path + experiment + '_params_all.dat')[:,-1]
     weight = (LL - np.max(LL))/(np.min(LL)-np.max(LL))
     weight = weight/np.sum(weight)
 
@@ -480,18 +481,22 @@ def plot_fit_hist(experiment):
 
     for i in range(shell):
         N,R,delss = param_list(i)
+
+        plt.subplot(shell, 3, i * 3 + 2)
+        R_mean = np.mean(R)
+        range = np.max(np.abs(R - R_mean)) * 0.95
+        range_index = np.where(np.logical_and(R >= R_mean - range, R <= R_mean + range))
+        plt.hist(R[range_index], weights=weight[range_index], bins=50)
+        plt.xlabel('shell ' + str(i + 1) + ' bond length ($\AA$)')
+        plt.tight_layout()
+
         plt.subplot(shell,3,i*3+1)
-        plt.hist(N,weights=weight,bins=50)
+        plt.hist(N[range_index],weights=weight[range_index],bins=50)
         plt.xlabel('shell '+str(i+1)+' coordination number')
         plt.tight_layout()
 
-        plt.subplot(shell,3,i*3+2)
-        plt.hist(R,weights=weight,bins=50)
-        plt.xlabel('shell '+str(i+1)+' bond length ($\AA$)')
-        plt.tight_layout()
-
         plt.subplot(shell,3,i*3+3)
-        plt.hist(delss,weights=weight,bins=50)
+        plt.hist(delss[range_index],weights=weight[range_index],bins=50)
         plt.xlabel('shell '+str(i+1)+' relative Debye-Waller factor compared with bul')
         plt.tight_layout()
 
@@ -526,6 +531,194 @@ def plot_fit_hist(experiment):
     plt.savefig(result_path + 'fit_'+experiment+'_histogram(no_weight).pdf',format='pdf')
     plt.close()
     return
+
+
+###############################################################
+##
+#
+#  statistic distribution of fit result (no calculation, Just plot on same figure)
+#
+#
+###################################################################
+
+def plot_fit_hist_in1fig(experiment_list):
+    plt.figure(figsize=(6, (shell + 1) * 1.3))
+    sns.set()
+
+    for i in range(shell):
+
+
+        for m in [1,0,2]:
+
+            plt.subplot(shell, 3, i * 3 + m+1)
+            for experiment in experiment_list:
+                def param_list(i):
+                    data = np.genfromtxt(result_path + experiment + '_params_all.dat')
+                    N = data[:, i * 3]
+                    R = data[:, i * 3 + 1]
+                    delss = data[:, i * 3 + 2]
+                    return N, R, delss
+
+                LL = np.genfromtxt(result_path + experiment + '_params_all.dat')[:, -1]
+                weight = (LL - np.max(LL)) / (np.min(LL) - np.max(LL))
+                weight = weight / np.sum(weight)
+
+                print('\n Start plotting fit analysis with weight in ', experiment, '..........')
+
+
+                if experiment == 'athena_R':
+                    j = 1
+                if experiment == 'athena_bulk':
+                    j = 0
+                    weight = weight/5
+                if experiment == 'athena_M311':
+                    j = 2
+                if experiment == 'athena_M322':
+                    j = 3
+                if i == 0 and j == 0:
+                    continue
+                color_j = list(cmap(j * 2 / 10))
+                color_j[-1] = 0.6
+                color_j = tuple(color_j)
+
+                N,R,delss = param_list(i)
+
+                if m ==1:
+
+                    R_mean = np.mean(R)
+                    R_range = np.max(np.abs(R - R_mean)) * 0.95
+                    range_index = np.where(np.logical_and(R >= R_mean - R_range, R <= R_mean + R_range))
+                    plt.hist(R[range_index],color=color_j, bins=50,linewidth=0.03)
+                    hist,bin_edges = np.histogram(R[range_index],bins=50)
+
+                    bin_centre = np.array([(bin_edges[i]+bin_edges[i+1])/2 for i in range(len(bin_edges)-1)])
+                    hist_data = np.vstack((bin_centre,hist)).transpose()
+                    np.savetxt(result_path + experiment + '_shell' + str(i+1) + '_R_hist.dat',hist_data,header='bin_centre  hist')
+
+
+                elif m == 0:
+                    plt.subplot(shell, 3, i * 3 + 1)
+                    plt.hist(N[range_index], color=color_j, bins=50,linewidth=0.03)
+
+                elif m == 2:
+                    plt.subplot(shell,3,i*3+3)
+                    plt.hist(delss[range_index], color = color_j,bins=50,linewidth=0.03)
+
+
+            if m == 1:
+                plt.xlabel('shell ' + str(i + 1) + ' - $R$ ($\AA$)')
+                plt.yticks([])
+
+                if i ==0:
+                    plt.xlim([2.3,2.5])
+                elif i == 2:
+                    plt.xlim([3.5,4.3])
+                plt.tight_layout()
+            elif m == 0:
+                plt.xlabel('shell ' + str(i + 1) + ' - $N$')
+                plt.yticks([])
+                plt.tight_layout()
+            elif m == 2:
+                plt.xlabel('shell ' + str(i + 1) + ' - $\Delta\sigma^2$')
+                plt.yticks([])
+                plt.tight_layout()
+                if i ==0:
+                    plt.xlim([0,0.08])
+                elif i == 2:
+                    plt.xlim([0,0.028])
+
+
+
+
+
+
+
+
+    print(' Finish plotting fit analysis with weight, saving figure ..........')
+    plt.savefig(result_path + 'fit_QDs_histogram.pdf',format='pdf')
+    plt.show()
+    plt.close()
+
+
+    return
+
+
+###############################################################
+##
+#
+#  find asymmetry lorenzian to fit histogram
+#
+#
+###################################################################
+def asymmetry_lorentzian(x,A,a,x0,gamma):
+    return 4*A*gamma**3/np.pi*(1+np.exp(a*(x-x0)))/((1+np.exp(a*(x-x0)))**2*(x-x0)**2+gamma**2)
+
+
+def fit_hist():
+    data = np.genfromtxt(result_path + experiment + '_shell' + str(shell) + '_R_hist.dat')
+    popt,pcov = curve_fit(asymmetry_lorentzian,data[:,0],data[:,1],p0 = (3,500,2.492,0.008))
+    plt.figure()
+    plt.plot(data[:,0],data[:,1])
+    # plt.plot(data[:, 0], asymmetry_lorentzian(data[:, 0],3, 500,2.492,0.008))
+    plt.plot(data[:,0],asymmetry_lorentzian(data[:,0],*popt))
+    plt.show()
+    plt.close()
+    return data[:,0], asymmetry_lorentzian(data[:,0],*popt),popt
+
+def rfft_fun(x, k, *popt):
+    return asymmetry_lorentzian(x, *popt) * np.exp(2*k*x)
+
+def rfft_hist():
+    hist_k = []
+    data = np.genfromtxt(result_path + experiment + '_fit.dat')
+    k_list = data[:, 0]
+    popt = fit_hist()[2]             # here, experiment, shell need to be defined as global varialble
+    print(popt)
+    for k in k_list:
+        hist_k.append(1/np.sqrt(2*pi)*integrate.quad(rfft_fun,0,5, args=(k,*popt))[0])
+
+    return hist_k
+
+def fit_multiply_hist(hist_k):
+
+    data = np.genfromtxt(result_path + experiment + '_fit.dat')
+    k = data[:,0]
+    chi_exp = data[:,1]
+    chi_fited = data[:,2]
+    data = np.genfromtxt(result_path + experiment + '_params_all.dat')
+    min_LL = data[:, -1].argmin()
+    chi_CdO = model_shell(k, *data[min_LL, (0,1,2)])
+    chi_hist = chi_CdO * hist_k *100
+    plt.figure()
+    # plt.plot(k,chi_CdO)
+    plt.plot(k,hist_k)
+    plt.ylim([0,15])
+    plt.show()
+    plt.close()
+    # for i in range(1,3):
+
+    chi_hist = chi_fited * hist_k
+
+    # plt.figure()
+    # plt.plot(k,chi_exp,'k-')
+    # plt.plot(k,chi_fited,label='chi_fit')
+    # plt.plot(k,hist_k,label='hist_fit')
+    # plt.legend()
+    # plt.show()
+    # plt.close()
+
+
+def fit_w_hist():
+
+    hist_k = rfft_hist()
+    fit_multiply_hist(hist_k)
+
+
+
+
+
+
+
 
 #############################################################
 #
@@ -584,7 +777,7 @@ def plot_corr(experiment):
 #
 ############################################################
 # filelist = glob.glob('/Users/sophia/ownCloud/PhD/Experiment_Analysis/Ge/Ge_QDs_HP_Nano_Letters/Ge_HP_Chi-k/*.k3')
-#     FEFF_exp(Ge_extract)
+# FEFF_exp(Ge_extract)
 # for file in filelist:
 #     filename = os.path.basename(file)
 #     Ge_experiment(file)
@@ -602,14 +795,22 @@ def plot_corr(experiment):
 ############################################################
 experiment_list = ['athena_bulk_12sh','athena_bulk','athena_R','athena_M311','athena_M322','athena_R_12sh','athena_M311_12sh','athena_M322_12sh','pyspline_M311','pyspline_M322','pyspline_bulk']
 FEFF_exp(CdSO_extract_cluster)
-CdOS_bounds()
-def parel_plot(experiment,loop_num=10):
-    print('\n \n \n Start processing experiment data :  ', experiment,' .......................')
-    CdS_experiment(experiment)
-    plot_best_fit(experiment,loop_num=loop_num)
-    plot_fit_hist(experiment)
-    plot_corr(experiment)
-    return
-for i in experiment_list[:6]:
-    parel_plot(i,loop_num=10000)
+# CdOS_bounds()
+# # def parel_plot(experiment,loop_num=10):
+# #     print('\n \n \n Start processing experiment data :  ', experiment,' .......................')
+# #     CdS_experiment(experiment)
+# #     # plot_best_fit(experiment,loop_num=loop_num)
+# #     plot_fit_hist(experiment)
+# #     # plot_corr(experiment)
+# #     return
+# # for i in experiment_list[3]:
+# #     parel_plot(i,loop_num=10000)
+#
+result_path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/result/CdO_CdS_CdCd/'
 
+
+plot_fit_hist_in1fig(experiment_list[1:5])
+# experiment = experiment_list[3]
+# shell = 1
+#
+# fit_w_hist()

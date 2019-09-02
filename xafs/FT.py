@@ -2,7 +2,7 @@
 from xafs import *
 
 DR=0.05 #step size of R
-fftPOINTS=1048 #number of fft points; works best if equal to 2^n
+fftPOINTS=2048 #number of fft points; works best if equal to 2^n
 
 
 
@@ -66,7 +66,8 @@ def calcfft(kdata,k3xafsdata,kmin=3,kmax=19,windowType='hanning'):
         imagdata.append((rawfftdata.imag[i]-rawfftdata.imag[-i])/2.0)
 
     # Return magnitude, real and imaginary data
-    r = arange(0,len(data)*DR,DR)
+    r = np.arange(0,len(data)*DR,DR)
+    data = np.array(data)
     return r,data,realdata,imagdata
 
 
