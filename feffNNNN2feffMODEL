@@ -1,0 +1,19 @@
+import glob
+import numpy as np
+
+filename = glob.glob('/Users/Sophia/ownCloud/PhD/Statistic Analysis/feff*')
+
+for i in filename:
+    data = np.genfromtxt(i,skip_header=16)
+    output = np.zeros((data.shape[0]+1,4), dtype='object')
+    output[0,0] = 'k'
+    output[0,1] = 'feff'
+    output[0,2] = 'phase'
+    output[0,3] = 'lambda'
+    output[1:,0] = data[:,0]
+    output[1:,1] = data[:,2]
+    output[1:,2] = data[:,1]+data[:,3]
+    output[1:,3] = data[:,5]
+    np.savetxt(i+'_processed', output, fmt='%s')
+    print(i, ' finishes')
+    print('------------------------------------------------------------------------------')

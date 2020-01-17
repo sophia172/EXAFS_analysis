@@ -25,9 +25,6 @@ def interpolation(f, x):
     g = interp1d(f[:, 0], f[:, 1])
     return g(x.tolist())
 
-
-
-
 parameter={}
 k_fit = np.linspace(3.5,9,300)
 R1= 2.47
@@ -57,6 +54,7 @@ def extract_amp_phase_lambda(exp_base_path,lambda_path,result_path,N=1,R=1,path_
     # spl = LSQUnivariateSpline(k_peak, chi_peak,t)
     # amp = spl(k_fit)
     #
+
     amp = np.abs(hilbert(path_chi))
     amp = np.vstack((k_temp,amp)).transpose()
     amp = interpolation(amp,k_fit)
@@ -259,6 +257,9 @@ def CdS_experiment(experiment):
         k = exp[:,0]
         chi = exp[:,1]
     return
+
+
+
 
 ###############################################################
 ##

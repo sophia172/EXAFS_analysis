@@ -1,0 +1,882 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="c3341299-484c-45e5-9e3a-de2b52cd9b25" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/Artemis_fitResult.py" beforeDir="false" afterPath="$PROJECT_DIR$/Artemis_fitResult.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Germanium.py" beforeDir="false" afterPath="$PROJECT_DIR$/Germanium.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/xafs/extract_Feff_phase.py" beforeDir="false" afterPath="$PROJECT_DIR$/xafs/extract_Feff_phase.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/EXAFS_analysis$feff_output.coverage" NAME="feff_output Coverage Results" MODIFIED="1554735718543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/EXAFS_analysis$EXAFS_analysis.coverage" NAME="EXAFS_analysis Coverage Results" MODIFIED="1557429764179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/EXAFS_analysis$normalization.coverage" NAME="normalization Coverage Results" MODIFIED="1551970431194" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/EXAFS_analysis$sum_path.coverage" NAME="sum_path Coverage Results" MODIFIED="1553258981089" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+  <component name="DatabaseView">
+    <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_DATA_SOURCES" value="true" />
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+    <option name="HIDDEN_KINDS">
+      <set />
+    </option>
+    <expand />
+    <select />
+  </component>
+  <component name="FUSProjectUsageTrigger">
+    <session id="-847903710">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="63" />
+          <entry key="project.open.time.10" value="8" />
+          <entry key="project.open.time.11" value="4" />
+          <entry key="project.open.time.12" value="4" />
+          <entry key="project.open.time.13" value="7" />
+          <entry key="project.open.time.14" value="8" />
+          <entry key="project.open.time.15" value="4" />
+          <entry key="project.open.time.16" value="2" />
+          <entry key="project.open.time.17" value="4" />
+          <entry key="project.open.time.18" value="1" />
+          <entry key="project.open.time.19" value="2" />
+          <entry key="project.open.time.2" value="1" />
+          <entry key="project.open.time.20" value="1" />
+          <entry key="project.open.time.21" value="1" />
+          <entry key="project.open.time.22" value="3" />
+          <entry key="project.open.time.23" value="1" />
+          <entry key="project.open.time.25" value="1" />
+          <entry key="project.open.time.3" value="3" />
+          <entry key="project.open.time.4" value="2" />
+          <entry key="project.open.time.5" value="2" />
+          <entry key="project.open.time.7" value="1" />
+          <entry key="project.open.time.8" value="2" />
+          <entry key="project.open.time.9" value="3" />
+          <entry key="project.opened" value="65" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.open">
+        <counts>
+          <entry key="calculator" value="2" />
+          <entry key="dat" value="2" />
+          <entry key="feff_output" value="9" />
+          <entry key="ipynb" value="6" />
+          <entry key="normalization" value="2" />
+          <entry key="py" value="74" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="IPNB" value="6" />
+          <entry key="PLAIN_TEXT" value="2" />
+          <entry key="Python" value="87" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="FT" value="50" />
+          <entry key="Fit difference" value="1" />
+          <entry key="Germanium" value="772" />
+          <entry key="Python Console" value="8160" />
+          <entry key="calculator" value="1051" />
+          <entry key="dummy" value="42" />
+          <entry key="exafs_func" value="265" />
+          <entry key="extract_Feff_phase" value="360" />
+          <entry key="feff_output" value="1795" />
+          <entry key="normalization" value="160" />
+          <entry key="py" value="59990" />
+          <entry key="ratio_fit" value="45" />
+          <entry key="reprocess_GUI" value="9" />
+          <entry key="script" value="16" />
+          <entry key="spec_plot" value="436" />
+          <entry key="txt" value="2184" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="PLAIN_TEXT" value="2226" />
+          <entry key="Python" value="73110" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.vcs.git.usages">
+        <counts>
+          <entry key="git.branch.create.new" value="1" />
+        </counts>
+      </usages-collector>
+    </session>
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="EXAFS_analysis" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Fit difference.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="84">
+              <caret line="147" column="61" selection-start-line="147" selection-start-column="61" selection-end-line="147" selection-end-column="61" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Fit difference.ipynb">
+          <provider selected="true" editor-type-id="ipnb-editor">
+            <state>
+              <selected id="0" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/xafs/FEFF_cal.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="330">
+              <caret line="22" column="16" selection-start-line="22" selection-start-column="16" selection-end-line="22" selection-end-column="16" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>3</find>
+      <find>LL</find>
+      <find>R=</find>
+      <find>R =</find>
+      <find>li</find>
+      <find>k_fine</find>
+      <find>calc_amp</find>
+      <find>phase_FEFF</find>
+      <find>cal</find>
+      <find>calc_am</find>
+      <find>fdg</find>
+      <find>amp</find>
+      <find>0.2</find>
+      <find>bound</find>
+      <find>N3</find>
+      <find>xlab</find>
+      <find>location</find>
+      <find>stati</find>
+      <find>legend</find>
+      <find>HIST</find>
+      <find>Ge</find>
+      <find>shell_num</find>
+      <find>dat.da</find>
+      <find>Sophia17_2</find>
+      <find>FEFF_exp</find>
+      <find>Ge_extract</find>
+      <find>gca</find>
+      <find>sophia17_2</find>
+      <find>font</find>
+      <find>Feff0</find>
+    </findStrings>
+    <replaceStrings>
+      <replace />
+      <replace>exafs_fun</replace>
+      <replace>sample</replace>
+      <replace>EXA</replace>
+      <replace>self</replace>
+      <replace>self.linewidth,</replace>
+      <replace>fontsize=5</replace>
+      <replace>chi_k</replace>
+      <replace>chi</replace>
+      <replace>FT_r</replace>
+      <replace>FT</replace>
+      <replace>calcfft</replace>
+      <replace>weight</replace>
+      <replace>self.interpolation</replace>
+      <replace>1</replace>
+      <replace>CdSO</replace>
+      <replace>Sophia</replace>
+      <replace>sophia</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="PUSH_TAGS">
+      <GitPushTagMode>
+        <option name="argument" value="--follow-tags" />
+        <option name="title" value="Current Branch" />
+      </GitPushTagMode>
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/normalization" />
+        <option value="$PROJECT_DIR$/sum_path.py" />
+        <option value="$PROJECT_DIR$/calculator" />
+        <option value="$PROJECT_DIR$/exafs_func.py" />
+        <option value="$PROJECT_DIR$/xafs/_init.py" />
+        <option value="$PROJECT_DIR$/xafs/exafs_func.py" />
+        <option value="$PROJECT_DIR$/xafs/FEFF_cal.py" />
+        <option value="$PROJECT_DIR$/xafs/_init_.py" />
+        <option value="$PROJECT_DIR$/xafs/fit.py" />
+        <option value="$PROJECT_DIR$/feff_output" />
+        <option value="$PROJECT_DIR$/xafs/artemis_FITplot.py" />
+        <option value="$PROJECT_DIR$/xafs/ratio_fit.py" />
+        <option value="$PROJECT_DIR$/Artemis_fitResult.ipynb" />
+        <option value="$PROJECT_DIR$/Artemis_fitResult.py" />
+        <option value="$PROJECT_DIR$/spec_plot.py" />
+        <option value="$PROJECT_DIR$/xafs/feff_output" />
+        <option value="$PROJECT_DIR$/script.py" />
+        <option value="$PROJECT_DIR$/xafs/def_sample.py" />
+        <option value="$PROJECT_DIR$/../../Experiment_Analysis/Diamond/Data Processing/diamond-data-processing/reprocess_GUI.py" />
+        <option value="$PROJECT_DIR$/xafs/__init__.py" />
+        <option value="$PROJECT_DIR$/Germanium.py" />
+        <option value="$PROJECT_DIR$/xafs/FT.py" />
+        <option value="$PROJECT_DIR$/xafs/extract_Feff_phase.py" />
+        <option value="$PROJECT_DIR$/Fit difference.py" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="ProjectFrameBounds" fullScreen="true">
+    <option name="width" value="1280" />
+    <option name="height" value="800" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="EXAFS_analysis" type="b2602c69:ProjectViewProjectNode" />
+              <item name="EXAFS_analysis" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="EXAFS_analysis" type="b2602c69:ProjectViewProjectNode" />
+              <item name="EXAFS_analysis" type="462c0819:PsiDirectoryNode" />
+              <item name="xafs" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/xafs" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.Fit difference">
+    <configuration name="EXAFS_analysis" type="JupiterNotebook" factoryName="Jupyter Notebook">
+      <module name="EXAFS_analysis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="additionalOptions" value="" />
+      <option name="ipnbHost" value="127.0.0.1" />
+      <option name="ipnbPort" value="8888" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Fit difference" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="EXAFS_analysis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Fit difference.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Germanium" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="EXAFS_analysis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Germanium.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="EXAFS_analysis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="extract_Feff_phase" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="EXAFS_analysis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/xafs" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/xafs/extract_Feff_phase.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="reprocess_GUI" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="EXAFS_analysis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Experiment_Analysis/Diamond/Data Processing/diamond-data-processing" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../../Experiment_Analysis/Diamond/Data Processing/diamond-data-processing/reprocess_GUI.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="script" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="EXAFS_analysis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/script.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Jupyter Notebook.EXAFS_analysis" />
+      <item itemvalue="Python.script" />
+      <item itemvalue="Python.Germanium" />
+      <item itemvalue="Python.reprocess_GUI" />
+      <item itemvalue="Python.extract_Feff_phase" />
+      <item itemvalue="Python.Fit difference" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.Fit difference" />
+        <item itemvalue="Python.extract_Feff_phase" />
+        <item itemvalue="Python.Germanium" />
+        <item itemvalue="Python.reprocess_GUI" />
+        <item itemvalue="Python.script" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c3341299-484c-45e5-9e3a-de2b52cd9b25" name="Default Changelist" comment="" />
+      <created>1551883154908</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1551883154908</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Statistic analysis of FEFF result&#10;&#10;1. feff_output: analyse the change of phase,Feff&amp;lambda over bond length on different shells&#10;2. sum_path: Nonlinear curve fitting using theory function to experiment&#10;3: normalization: Was going to use background spline from bulk to M311. However, It's easier to fit background on each curve.">
+      <created>1552336542580</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1552336542581</updated>
+    </task>
+    <task id="LOCAL-00002" summary="1. create modules called exafs_func.py&#10;2. create a file to plot spectra&#10;3. Change curve fit">
+      <created>1552934666965</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1552934666965</updated>
+    </task>
+    <task id="LOCAL-00003" summary="group fitting functions and some plot function into a class/module">
+      <created>1553208135795</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1553208135795</updated>
+    </task>
+    <task id="LOCAL-00004" summary="arrange functions into a folder.&#10;current problem: cannot import function from another file">
+      <created>1554987285911</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1554987285911</updated>
+    </task>
+    <task id="LOCAL-00005" summary="optimize plotting">
+      <created>1554987377010</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1554987377010</updated>
+    </task>
+    <task id="LOCAL-00006" summary="import functions from file FT.py (fail)">
+      <created>1554989063414</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1554989063414</updated>
+    </task>
+    <task id="LOCAL-00007" summary="1. solved function import problem&#10;2. delete original big file &quot;exafs_func&quot;&#10;3. fit funs are in delf_sample coz I am too lazy to move it out.">
+      <created>1554993227628</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1554993227628</updated>
+    </task>
+    <task id="LOCAL-00008" summary="1. fixed bug in pyspline curve: large data points caused faulty FT result&#10;2. Add plot function for artemis fit.">
+      <created>1556129153513</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1556129153513</updated>
+    </task>
+    <task id="LOCAL-00009" summary="1. used FT function in pyspline;&#10;2. Added data analysis part for Germanium&#10;3. others">
+      <created>1558436562603</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1558436562604</updated>
+    </task>
+    <task id="LOCAL-00010" summary="1. fix bugs and shrink the code &#10;2. Codes need to be cleaned later">
+      <created>1559312685044</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1559312685044</updated>
+    </task>
+    <task id="LOCAL-00011" summary="1. add phase calculation function in Gemanium.py (still debugging)">
+      <created>1560491784331</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1560491784332</updated>
+    </task>
+    <task id="LOCAL-00012" summary="1. use spline to fit phase and Feff from experiment&#10;2. Add convergence to achieve best phase and Feff">
+      <created>1561592971525</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1561592971525</updated>
+    </task>
+    <task id="LOCAL-00013" summary="1. apply 'extract FEFF from experiment' on CdS and generate new python file;&#10;2. use athena CdS bulk file and CdO_ref online to extract FEFF;&#10;3. loop fit algorithm to achieve best result;&#10;4. organise the functions so I dont need to change each parameter&#10;5. still need to comment on most functions">
+      <created>1562771386500</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1562771386500</updated>
+    </task>
+    <task id="LOCAL-00014" summary="1. fit the extraction system for both Ge and CdS&#10;2. labelled each function">
+      <created>1564744217361</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1564744217361</updated>
+    </task>
+    <task id="LOCAL-00015" summary="1. fix little bugs">
+      <created>1564745662471</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1564745662471</updated>
+    </task>
+    <task id="LOCAL-00016" summary="1. add more printing comment to explain process">
+      <created>1564746946863</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1564746946863</updated>
+    </task>
+    <task id="LOCAL-00017" summary="fix bugs">
+      <created>1564752644058</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1564752644058</updated>
+    </task>
+    <task id="LOCAL-00018" summary="1. modified to fit laptop with existing parameter file.&#10;2. calculation version for Apocrita HPC is in temperary file">
+      <created>1567432910855</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1567432910855</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
+    <servers />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="0" width="1280" height="800" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48417133" visible="true" weight="0.35702747" />
+      <window_info id="Structure" order="1" sideWeight="0.51582867" side_tool="true" weight="0.3101777" />
+      <window_info id="Favorites" order="2" side_tool="true" weight="0.32975206" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.329927" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49919224" weight="0.28759125" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32876712" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50080776" side_tool="true" weight="0.329927" />
+      <window_info anchor="bottom" id="Terminal" order="11" weight="0.32739726" />
+      <window_info active="true" anchor="bottom" id="Python Console" order="12" visible="true" weight="0.26438355" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="SciView" order="3" sideWeight="0.9368192" visible="true" weight="0.6429725" />
+      <window_info anchor="right" id="Database" order="4" weight="0.20355412" />
+      <window_info anchor="right" x="0" y="0" width="270" height="577" id="Documentation" order="5" sideWeight="0.06318083" side_tool="true" weight="0.8352181" />
+    </layout>
+    <layout-to-restore>
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48417133" visible="true" weight="0.3101777" />
+      <window_info id="Structure" order="1" sideWeight="0.51582867" side_tool="true" visible="true" weight="0.3101777" />
+      <window_info id="Favorites" order="2" side_tool="true" weight="0.32975206" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.329927" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49919224" weight="0.28759125" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32876712" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50080776" side_tool="true" weight="0.329927" />
+      <window_info anchor="bottom" id="Terminal" order="11" weight="0.32739726" />
+      <window_info active="true" anchor="bottom" id="Python Console" order="12" visible="true" weight="0.26438355" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="SciView" order="3" sideWeight="0.9368192" weight="0.68901455" />
+      <window_info anchor="right" id="Database" order="4" weight="0.20355412" />
+      <window_info anchor="right" x="0" y="0" width="270" height="577" id="Documentation" order="5" sideWeight="0.06318083" side_tool="true" weight="0.8352181" />
+    </layout-to-restore>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Statistic analysis of FEFF result&#10;&#10;1. feff_output: analyse the change of phase,Feff&amp;lambda over bond length on different shells&#10;2. sum_path: Nonlinear curve fitting using theory function to experiment&#10;3: normalization: Was going to use background spline from bulk to M311. However, It's easier to fit background on each curve." />
+    <MESSAGE value="1. create modules called exafs_func.py&#10;2. create a file to plot spectra&#10;3. Change curve fit" />
+    <MESSAGE value="group fitting functions and some plot function into a class/module" />
+    <MESSAGE value="arrange functions into a folder.&#10;current problem: cannot import function from another file" />
+    <MESSAGE value="optimize plotting" />
+    <MESSAGE value="import functions from file FT.py (fail)" />
+    <MESSAGE value="1. solved function import problem&#10;2. delete original big file &quot;exafs_func&quot;&#10;3. fit funs are in delf_sample coz I am too lazy to move it out." />
+    <MESSAGE value="1. fixed bug in pyspline curve: large data points caused faulty FT result&#10;2. Add plot function for artemis fit." />
+    <MESSAGE value="1. used FT function in pyspline;&#10;2. Added data analysis part for Germanium&#10;3. others" />
+    <MESSAGE value="1. fix bugs and shrink the code &#10;2. Codes need to be cleaned later" />
+    <MESSAGE value="1. add phase calculation function in Gemanium.py (still debugging)" />
+    <MESSAGE value="1. use spline to fit phase and Feff from experiment&#10;2. Add convergence to achieve best phase and Feff" />
+    <MESSAGE value="1. apply 'extract FEFF from experiment' on CdS and generate new python file;&#10;2. use athena CdS bulk file and CdO_ref online to extract FEFF;&#10;3. loop fit algorithm to achieve best result;&#10;4. organise the functions so I dont need to change each parameter&#10;5. still need to comment on most functions" />
+    <MESSAGE value="1. fit the extraction system for both Ge and CdS&#10;2. labelled each function" />
+    <MESSAGE value="1. fix little bugs" />
+    <MESSAGE value="1. add more printing comment to explain process" />
+    <MESSAGE value="fix bugs" />
+    <MESSAGE value="1. modified to fit laptop with existing parameter file.&#10;2. calculation version for Apocrita HPC is in temperary file" />
+    <option name="LAST_COMMIT_MESSAGE" value="1. modified to fit laptop with existing parameter file.&#10;2. calculation version for Apocrita HPC is in temperary file" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.5/lib/python3.5/site-packages/scipy/optimize/_lsq/least_squares.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1241">
+          <caret line="792" selection-start-line="792" selection-end-line="792" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/normalization">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="13" column="44" selection-start-line="13" selection-start-column="44" selection-end-line="13" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sum_path.py" />
+    <entry file="file://$PROJECT_DIR$/xafs/fit.py" />
+    <entry file="file://$PROJECT_DIR$/feffNNNN2feffMODEL">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" selection-start-line="19" selection-end-line="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.5/lib/python3.5/site-packages/matplotlib/pyplot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2700">
+          <caret line="229" column="24" selection-start-line="229" selection-start-column="24" selection-end-line="229" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting result.dat">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-90" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xafs/ratio_fit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="4" selection-start-line="4" selection-end-line="6" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/spec_plot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="297">
+          <caret line="115" selection-start-line="115" selection-end-line="115" selection-end-column="100" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.2/python_stubs/776880377/numpy/core/_multiarray_umath.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="172">
+          <caret line="10624" column="8" selection-start-line="10624" selection-start-column="8" selection-end-line="10624" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/script.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2310">
+          <caret line="154" column="19" selection-start-line="154" selection-start-column="19" selection-end-line="154" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xafs/feff_output">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" column="132" selection-start-line="13" selection-start-column="118" selection-end-line="13" selection-end-column="132" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.5/lib/python3.5/site-packages/scipy/interpolate/interpolate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6881">
+          <caret line="695" selection-start-line="695" selection-end-line="695" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../Experiment_Analysis/Diamond/Data Processing/diamond-data-processing/reprocess_GUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="17" column="10" selection-start-line="17" selection-start-column="6" selection-end-line="17" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xafs/def_sample.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="160">
+          <caret line="583" column="18" selection-start-line="583" selection-start-column="12" selection-end-line="583" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Artemis_fitResult.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xafs/artemis_FITplot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="22" selection-start-line="22" selection-end-line="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xafs/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="460">
+          <caret line="32" column="14" selection-start-line="32" selection-start-column="14" selection-end-line="32" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Artemis_fitResult.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-47">
+          <caret line="75" selection-start-line="75" selection-end-line="75" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Simulation_shell_result.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/XANES_fit.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Germanium.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="25" column="24" selection-end-line="583" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xafs/FT.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="233">
+          <caret line="67" column="47" lean-forward="true" selection-start-line="67" selection-start-column="47" selection-end-line="67" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xafs/extract_Feff_phase.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="115">
+          <caret line="318" column="29" selection-start-line="318" selection-start-column="29" selection-end-line="318" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xafs/FEFF_cal.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="22" column="16" selection-start-line="22" selection-start-column="16" selection-end-line="22" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Fit difference.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Fit difference.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="84">
+          <caret line="147" column="61" selection-start-line="147" selection-start-column="61" selection-end-line="147" selection-end-column="61" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

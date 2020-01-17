@@ -280,6 +280,30 @@ def CdSO_extract_cluster():
         extract_amp_phase_lambda(exp_path1, FEFF_path1, result_path, N=6, R=2.3475, path_name='Cd-O')
     return CdSO_FEFF,result_path,shell_num
 
+def CdSeO_extract_cluster():
+    '''
+    This function is to extract FEFF information from bulk samples in Cd edge
+    :return:
+    '''
+    FEFF_path2 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdSe/source/feff_CdSe.dat'
+    FEFF_path3 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdSe/source/feff_CdCd.dat'
+    FEFF_path1 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdSe/source/feff_CdO.dat'
+    exp_path2 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdSe/source/CdSe_bulk_CdK_Aug18_athena_1sh.chiq'
+    exp_path3 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdSe/source/CdSe_bulk_CdK_Aug18_athena_2sh.chiq'
+    exp_path1 = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdSe/source/CdO_ref_1sh.chiq'
+    ### need change
+    result_path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdSe/result/'                   ###
+    ### need change
+    shell_num = 3                                                                      ###
+    CdSeO_FEFF = {}
+    CdSeO_FEFF['Feff2'], CdSeO_FEFF['phase2'], CdSeO_FEFF['lambda2'] = \
+        extract_amp_phase_lambda(exp_path2,FEFF_path2, result_path, N=4,R=2.6034,path_name='Cd-Se')
+    CdSeO_FEFF['Feff3'], CdSeO_FEFF['phase3'], CdSeO_FEFF['lambda3'] = \
+        extract_amp_phase_lambda(exp_path3, FEFF_path3, result_path, N=12, R=4.2865, path_name='Cd-Cd')
+    CdSeO_FEFF['Feff1'], CdSeO_FEFF['phase1'], CdSeO_FEFF['lambda1'] = \
+        extract_amp_phase_lambda(exp_path1, FEFF_path1, result_path, N=6, R=2.3475, path_name='Cd-O')
+    return CdSeO_FEFF,result_path,shell_num
+
 
 
 ###############################################################
@@ -542,7 +566,7 @@ def plot_fit_hist(experiment):
 ###################################################################
 
 def plot_fit_hist_in1fig(experiment_list):
-    plt.figure(figsize=(6, (shell + 1) * 1.3))
+    fig = plt.figure(figsize=(6, (shell + 1) * 1.3))
     sns.set()
 
     for i in range(shell):
@@ -589,6 +613,7 @@ def plot_fit_hist_in1fig(experiment_list):
                     R_range = np.max(np.abs(R - R_mean)) * 0.95
                     range_index = np.where(np.logical_and(R >= R_mean - R_range, R <= R_mean + R_range))
                     plt.hist(R[range_index],color=color_j, bins=50,linewidth=0.03)
+
                     hist,bin_edges = np.histogram(R[range_index],bins=50)
 
                     bin_centre = np.array([(bin_edges[i]+bin_edges[i+1])/2 for i in range(len(bin_edges)-1)])
@@ -600,9 +625,12 @@ def plot_fit_hist_in1fig(experiment_list):
                     plt.subplot(shell, 3, i * 3 + 1)
                     plt.hist(N[range_index], color=color_j, bins=50,linewidth=0.03)
 
+
+
                 elif m == 2:
                     plt.subplot(shell,3,i*3+3)
                     plt.hist(delss[range_index], color = color_j,bins=50,linewidth=0.03)
+
 
 
             if m == 1:
@@ -793,7 +821,7 @@ def plot_corr(experiment):
 # Fit for CdS experiment
 #
 ############################################################
-experiment_list = ['athena_bulk_12sh','athena_bulk','athena_R','athena_M311','athena_M322','athena_R_12sh','athena_M311_12sh','athena_M322_12sh','pyspline_M311','pyspline_M322','pyspline_bulk']
+experiment_list = ['CdSe_M_unpurified_CdK','CdSe_bulk_CdK','CdSe_R_CdK','athena_bulk_12sh','athena_bulk','athena_R','athena_M311','athena_M322','athena_R_12sh','athena_M311_12sh','athena_M322_12sh','pyspline_M311','pyspline_M322','pyspline_bulk']
 FEFF_exp(CdSO_extract_cluster)
 # CdOS_bounds()
 # # def parel_plot(experiment,loop_num=10):
@@ -806,10 +834,10 @@ FEFF_exp(CdSO_extract_cluster)
 # # for i in experiment_list[3]:
 # #     parel_plot(i,loop_num=10000)
 #
-result_path = '/Users/sophia/ownCloud/PhD/Statistic Analysis/CdS/result/CdO_CdS_CdCd/'
+result_path = '/Users/Sophia/ownCloud/PhD/Statistic Analysis/CdS/result/without_e/'
 
 
-plot_fit_hist_in1fig(experiment_list[1:5])
+plot_fit_hist_in1fig(experiment_list[5:8])
 # experiment = experiment_list[3]
 # shell = 1
 #
