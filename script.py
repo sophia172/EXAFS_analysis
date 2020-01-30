@@ -155,3 +155,5 @@ plt.figure()
 plt.plot(k,exp*k**3,'k.')
 plt.plot(krange,chiq)
 plt.show()
+
+

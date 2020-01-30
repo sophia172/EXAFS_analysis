@@ -663,7 +663,7 @@ def plot_fit_hist_in1fig(experiment_list):
 
 
     print(' Finish plotting fit analysis with weight, saving figure ..........')
-    plt.savefig(result_path + 'fit_QDs_histogram.pdf',format='pdf')
+    plt.savefig(result_path + 'fit_QDs_histogram1.pdf',format='pdf')
     plt.show()
     plt.close()
 
@@ -821,8 +821,8 @@ def plot_corr(experiment):
 # Fit for CdS experiment
 #
 ############################################################
-experiment_list = ['CdSe_M_unpurified_CdK','CdSe_bulk_CdK','CdSe_R_CdK','athena_bulk_12sh','athena_bulk','athena_R','athena_M311','athena_M322','athena_R_12sh','athena_M311_12sh','athena_M322_12sh','pyspline_M311','pyspline_M322','pyspline_bulk']
-FEFF_exp(CdSO_extract_cluster)
+# experiment_list = ['CdSe_M_unpurified_CdK','CdSe_bulk_CdK','CdSe_R_CdK','athena_bulk_12sh','athena_bulk','athena_R','athena_M311','athena_M322','athena_R_12sh','athena_M311_12sh','athena_M322_12sh','pyspline_M311','pyspline_M322','pyspline_bulk']
+# FEFF_exp(CdSO_extract_cluster)
 # CdOS_bounds()
 # # def parel_plot(experiment,loop_num=10):
 # #     print('\n \n \n Start processing experiment data :  ', experiment,' .......................')
@@ -834,10 +834,10 @@ FEFF_exp(CdSO_extract_cluster)
 # # for i in experiment_list[3]:
 # #     parel_plot(i,loop_num=10000)
 #
-result_path = '/Users/Sophia/ownCloud/PhD/Statistic Analysis/CdS/result/without_e/'
+# result_path = '/Users/Sophia/ownCloud/PhD/Statistic Analysis/CdS/result/CdO_CdS_CdCd/'
 
 
-plot_fit_hist_in1fig(experiment_list[5:8])
+# plot_fit_hist_in1fig(experiment_list[5:8])
 # experiment = experiment_list[3]
 # shell = 1
 #

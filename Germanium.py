@@ -487,17 +487,17 @@ def plot_fit_hist(experiment):
         N,R,delss = param_list(i)
         plt.subplot(shell,3,i+1)
         plt.hist(N,weights=weight,bins=50)
-        plt.xlabel('shell '+'i'+' coordination number')
+        plt.xlabel('shell '+i+' coordination number')
         plt.tight_layout()
 
         plt.subplot(shell,3,i+2)
         plt.hist(R,weights=weight,bins=50)
-        plt.xlabel('shell '+'i'+' bond length ($\AA$)')
+        plt.xlabel('shell '+i+' bond length ($\AA$)')
         plt.tight_layout()
 
         plt.subplot(shell,3,i+3)
         plt.hist(R,weights=weight,bins=50)
-        plt.xlabel('shell '+'i'+' relative Debye-Waller factor compared with bul')
+        plt.xlabel('shell '+i+' relative Debye-Waller factor compared with bulk')
         plt.tight_layout()
 
     plt.savefig(result_path + 'fit_'+experiment[7:]+'_histogram(no_weight).pdf',format='pdf')

@@ -24,12 +24,8 @@ from xafs.def_sample import *
 from xafs.FEFF_cal import *
 from xafs.ratio_fit import *
 from xafs.artemis_FITplot import *
-import os
 
-# import pylab, os, numpy, getpass, wx
-# import sys
-import multiprocess as mp
-import seaborn as sns
-import tensorflow as tf
-
+def interpolation(f, x):
+    g = interp1d(f[:, 0], f[:, 1])
+    return g(x.tolist())
 
