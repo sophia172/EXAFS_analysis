@@ -79,7 +79,7 @@ class fit():
             parameter[i] = pool.apply_async(self.fit,args=(seed,)).get()
         pool.close()
         pool.join()
-
+        print('loop finished')
         self.params = np.array([parameter[i] for i in range(loop_num)])
 
 
@@ -88,11 +88,11 @@ class fit():
 
         return _plot_(self.params,self.shells,self.name)
 
-    def fit_result(self):
+    def save_result(self):
 
         LL = self.params[:,-1]
         best_params = self.params[np.where(self.params == np.min(LL))[0][0]]
-        print(np.where(self.params == np.min(LL))[0],np.where(self.params == np.min(LL)),np.min(LL))
+        print(' Best parameters : \n',best_params,np.min(LL))
         fit_result = self.cal_chi(best_params)
         e = best_params[-2]
         k_new = np.sqrt(self.k_fit ** 2 - 0.2625 * e)
