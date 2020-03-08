@@ -16,7 +16,10 @@ class fit():
         return
 
     def set_fit_range(self,start, end):
+        self.start = start
+        self.end = end
         self.k_fit = np.linspace(start, end, int((end - start) * 40))
+        print(' fit range is reset between ',self.start,'  and  ', self.end)
         return
 
     def set_sample_name(self,name):
@@ -47,7 +50,14 @@ class fit():
         e = params[-1]
         k_new = np.sqrt(self.k_fit ** 2 - 0.2625 * e)
         data = np.vstack((self.sample_k,self.sample_chi)).transpose()
-        self.chi_fit = interpolation(data,k_new)
+        while True:
+            try:
+                self.chi_fit = interpolation(data,k_new)
+                break
+            except:
+                self.set_fit_range(self.start + 0.5, self.end - 0.5)
+                k_new = np.sqrt(self.k_fit ** 2 - 0.2625 * e)
+
         calculated_chi = self.cal_chi(params)
         LL = -np.sum(stats.norm.logpdf(self.chi_fit * self.k_fit ** 2, loc=calculated_chi))
         return LL
