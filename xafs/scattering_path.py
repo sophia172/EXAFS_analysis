@@ -3,7 +3,7 @@ import glob
 import numpy as np
 from scipy.signal import hilbert
 import matplotlib.pyplot as plt
-from EXAFS_analysis.xafs import interpolation
+from xafs import interpolation
 
 
 
@@ -31,7 +31,7 @@ class scattering_path():
 
     def set_fit_range(self,start=2,end=17):
         print('fit range reset ...')
-        self.k = np.linspace(start-1, end +0.5, int((end-start) * 4000))
+        self.k = np.linspace(start-1, end +0.2, int((end-start) * 4000))
 
 
     def set_params(self, N=4, R=2.5):

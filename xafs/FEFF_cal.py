@@ -1,4 +1,4 @@
-from EXAFS_analysis.xafs import *
+from xafs import *
 
 def plot_FEFF_average(self,model):
     filename = glob.glob('/Users/Sophia/ownCloud/PhD/Matlab figure/CdS/EXAFS/EXAFSsimulation_{:s}*'.format(model))

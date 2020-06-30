@@ -3,14 +3,21 @@ import seaborn as sns
 import numpy as np
 from matplotlib import cm
 import pandas as pd
+import os
 cmap = cm.get_cmap('tab10')
 
 class visulisation():
-    def __init__(self,samples):
-        self.samples = samples
+    def __init__(self,filelist):
+        self.params = {}
+        for file in filelist:
+            file_path = os.path.join(os.getcwd(), 'result', 'parameters_' + file + '.dat')
+            self.params[file] = np.genfromtxt(file_path)
+
+    def pdf_fit_mean(self):
+        return
 
     def pdf_hist(self):
-        max_shell = max([len(sample.shells) for sample in self.samples])
+        max_shell = (max([self.params[sample].shape[1] for sample in self.params.keys()]) - 1)/3
         plt.figure(figsize=(15, (max_shell + 1) * 2.5))
         sns.set()
 
@@ -18,7 +25,7 @@ class visulisation():
             for m in [1,0,2]:
 
                 plt.subplot(max_shell, 3, i * 3 + m+1)
-                for j,sample in enumerate(self.samples):
+                for j,sample in enumerate(self.params.keys()):
                     df = pd.DataFrame(sample.params[:,m*3:m*3+3].T,columns=['N','R','delss'])
                     LL = sample.params[:,-1]
                     weight = (LL - np.max(LL)) / (np.min(LL) - np.max(LL))

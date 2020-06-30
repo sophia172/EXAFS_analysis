@@ -19,11 +19,11 @@ from numpy import fft
 # from time import time
 import numpy
 
-from EXAFS_analysis.xafs.FT import *
-from EXAFS_analysis.xafs.def_sample import *
-from EXAFS_analysis.xafs.FEFF_cal import *
-from EXAFS_analysis.xafs.ratio_fit import *
-from EXAFS_analysis.xafs.artemis_FITplot import *
+from xafs.FT import *
+from xafs.def_sample import *
+from xafs.FEFF_cal import *
+from xafs.ratio_fit import *
+from xafs.artemis_FITplot import *
 
 def interpolation(f, x):
     g = interp1d(f[:, 0], f[:, 1])

@@ -1,5 +1,5 @@
 ####  fourier transform of experiment
-from EXAFS_analysis.xafs import *
+from xafs import *
 
 DR=0.05 #step size of R
 fftPOINTS=2048 #number of fft points; works best if equal to 2^n

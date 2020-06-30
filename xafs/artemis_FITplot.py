@@ -1,4 +1,4 @@
-from EXAFS_analysis.xafs import *
+from xafs import *
 
 def artemis_fit(sample):
     chi_list = glob.glob('/Users/Sophia/ownCloud/PhD/Statistic Analysis/data/{:s}_Aug18_{:s}*.k'.format(sample.sample,sample.fitted_curve))

@@ -1,5 +1,5 @@
 ####  fit Cd-O and Cd-S ratio
-from EXAFS_analysis.xafs import *
+from xafs import *
 # from ipywidgets import interact
 
 def interpolation(f, x):

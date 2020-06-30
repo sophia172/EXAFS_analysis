@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from EXAFS_analysis.xafs import *
+from xafs import *
 
 
 
